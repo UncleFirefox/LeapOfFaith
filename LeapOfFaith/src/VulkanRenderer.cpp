@@ -27,6 +27,10 @@ void VulkanRenderer::cleanup()
 
 void VulkanRenderer::createInstance()
 {
+	if (this->enableValidationLayers && !checkValidationLayerSupport()) {
+		throw std::runtime_error("Validation layers requested, but not available!");
+	}
+
 	// Information about the application itself
 	// Most data here doesn't affect the program and is for developer convencience;
 	VkApplicationInfo appInfo = {};
@@ -66,9 +70,15 @@ void VulkanRenderer::createInstance()
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
 	createInfo.ppEnabledExtensionNames = instanceExtensions.data();
 
-	// TODO: Setup validation layers tha instance will use
-	createInfo.enabledLayerCount = 0;
-	createInfo.ppEnabledLayerNames = nullptr;
+	// TODO: Revisit validation layers
+	if (this->enableValidationLayers) {
+		createInfo.enabledLayerCount = static_cast<uint32_t>(this->validationLayers.size());
+		createInfo.ppEnabledLayerNames = this->validationLayers.data();
+	}
+	else {
+		createInfo.enabledLayerCount = 0;
+		createInfo.ppEnabledLayerNames = nullptr;
+	}
 
 	// Create Instance
 	// MARCO: Second argument is about memory management, what do you think?
@@ -200,6 +210,32 @@ bool VulkanRenderer::checkDeviceSuitable(VkPhysicalDevice device)
 	QueueFamilyIndices indices = getQueueFamilies(device);
 
 	return indices.isValid();
+}
+
+bool VulkanRenderer::checkValidationLayerSupport()
+{
+	uint32_t layerCount;
+	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+	std::vector<VkLayerProperties> availableLayers(layerCount);
+	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+	for (const char* layerName : this->validationLayers) {
+		bool layerFound = false;
+
+		for (const auto& layerProperties : availableLayers) {
+			if (strcmp(layerName, layerProperties.layerName) == 0) {
+				layerFound = true;
+				break;
+			}
+		}
+
+		if (!layerFound) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 QueueFamilyIndices VulkanRenderer::getQueueFamilies(VkPhysicalDevice device)
