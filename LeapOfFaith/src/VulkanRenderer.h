@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <vector>
+#include <set>
 
 #include "Utilities.h"
 
@@ -23,11 +24,14 @@ private:
 		VkDevice logicalDevice;
 	} mainDevice;
 	VkQueue graphicsQueue;
+	VkQueue presentationQueue;
+	VkSurfaceKHR surface;
 
 	// Vulkan Functions
 	// Create Functions
 	void createInstance();
 	void createLogicalDevice();
+	void createSurface();
 
 	// Get Functions
 	void getPhysicalDevice();
@@ -35,6 +39,7 @@ private:
 	// Support Functions
 	// Checking
 	bool checkInstanceExtensionSupport(std::vector<const char*>* checkExtensions);
+	bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 	bool checkDeviceSuitable(VkPhysicalDevice device);
 
 	// Validation section added by the community at Udemy
@@ -51,5 +56,6 @@ private:
 
 	// Getting functions
 	QueueFamilyIndices getQueueFamilies(VkPhysicalDevice device);
+	SwapChainDetails getSwapChainDetails(VkPhysicalDevice device);
 };
 
