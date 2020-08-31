@@ -7,6 +7,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <array>
 
 #include "Utilities.h"
 
@@ -31,6 +32,11 @@ private:
 	VkSwapchainKHR swapchain;
 	std::vector<SwapchainImage> swapChainImages;
 
+	// Pipeline
+	VkPipeline graphicsPipeline;
+	VkPipelineLayout pipelineLayout;
+	VkRenderPass renderPass;
+
 	// Utility
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
@@ -41,6 +47,8 @@ private:
 	void createLogicalDevice();
 	void createSurface();
 	void createSwapChain();
+	void createRenderPass();
+	void createGraphicsPipeline();
 
 	// Get Functions
 	void getPhysicalDevice();
@@ -74,5 +82,6 @@ private:
 
 	// Helper Create functions
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+	VkShaderModule createShaderModule(const std::vector<char>& code);
 };
 
