@@ -23,7 +23,7 @@ email: albertrfranco@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
   This is the blog dedicated to the development of the Leap Of Faith
   graphics Engine. Entry posts will be created as the development goes on.
-baseurl: "" # the subpath of your site, e.g. /blog
+baseurl: "/LeapOfFaith" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: UncleFirefox
 github_username:  UncleFirefox
