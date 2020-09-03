@@ -29,13 +29,13 @@ Knowing that I could not study full-time I got to an agreement with the Masters 
 
 So far I've finished the school period with an average grade of 9.51/10, it was a very intense year (which deserves its own post) and the idea now is to get ready for the thesis which I'll deliver in summer 2021.
 
-To enhance my knowledge and my skills towards a real industry project, on top of the masters program, I'm working with Marco Giordano as my mentor on a program to accelerate my knowledge of real-time APIs with Vulkan.
+To enhance my knowledge and my skills towards a real industry project, on top of the masters program, I'm working with [Marco Giordano](https://www.linkedin.com/in/marcogiordano3d/) as my mentor on a program to accelerate my knowledge of real-time APIs with Vulkan.
 
 ## Why Leap of Faith?
 After my MsC school year you can imagine I tackled many areas in Computer Graphics, unfortunately we could not get in-depth on the ones I liked the most this means that to transition to a real job I'll need to develop my continue learning which is why I'm on a mentorship. The idea of Leap of Faith is to showcase everything I learned from my MsC put into practice on a real-time graphics engine with a modern graphics API.
 
 The name signifies the moment I'm really into right now, where I'm objectively a Senior software engineer but I don't have real world experience in the field of Computer Graphics which means that I'll need to work really hard and jump a leap which I don't really know where it will take...
 
-{:refdef: style="text-align: center;"}
-![The leap of faith]({{site.baseurl}}/leapoffaith.png)
-{: refdef}
+<div style="text-align: center">
+  <img src="{{site.baseurl}}/leapoffaith.png" width="100" />
+</div>
