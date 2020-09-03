@@ -36,6 +36,6 @@ After my MsC school year you can imagine I tackled many areas in Computer Graphi
 
 The name signifies the moment I'm really into right now, where I'm objectively a Senior software engineer but I don't have real world experience in the field of Computer Graphics which means that I'll need to work really hard and jump a leap which I don't really know where it will take...
 
+{:refdef: style="text-align: center;"}
 ![The leap of faith]({{site.baseurl}}/leapoffaith.png)
-
-
+{: refdef}
