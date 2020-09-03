@@ -1,6 +1,6 @@
 # Leap Of Faith
 <div style="text-align: center">
-  <img src="{{site.baseurl}}/leapoffaith.png" width="80%">
+  <img src="/leapoffaith.png" width="80%">
 </div>
 
 Leap of faith is an experimental graphics engine to serve as the basis for a show-case on the adventures of [Albert Rodriguez Franco](https://www.linkedin.com/in/albertrodriguezfranco/) and his learning on Computer Graphics APIs and techniques.
