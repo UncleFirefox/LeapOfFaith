@@ -6,6 +6,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include <stdexcept>
 #include <vector>
 #include <set>
@@ -15,6 +19,7 @@
 #include <stb_image.h>
 
 #include "Mesh.h"
+#include "MeshModel.h"
 #include "Utilities.h"
 
 class VulkanRenderer
@@ -22,6 +27,7 @@ class VulkanRenderer
 public:
 	int init(GLFWwindow* newWindow);
 
+	int createMeshModel(std::string modelFile);
 	void updateModel(int modelId, glm::mat4 newModel);
 
 	void draw();
@@ -32,7 +38,7 @@ private:
 	int currentFrame = 0;
 
 	// Scene objects
-	std::vector<Mesh> meshList;
+	std::vector<MeshModel> modelList;
 
 	// Scene Settings
 	struct UboViewProjection {
@@ -83,6 +89,7 @@ private:
 	//Model* modelTransferSpace;
 
 	// Assets
+
 	std::vector<VkImage> textureImages;
 	std::vector<VkDeviceMemory> textureImageMemory;
 	std::vector<VkImageView> textureImageViews;
@@ -176,6 +183,5 @@ private:
 
 	// Loader functions
 	stbi_uc* loadTextureFile(std::string fileName, int* width, int* height, VkDeviceSize* imageSize);
-
 };
 
