@@ -1,3 +1,4 @@
+#define STB_IMAGE_IMPLEMENTATION
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #define GLFW_INCLUDE_VULKAN
@@ -12,7 +13,7 @@
 GLFWwindow* window;
 VulkanRenderer vulkanRenderer;
 
-void initWindow(std::string wName = "TestWindow", const int width = 800, const int height = 600)
+void initWindow(std::string wName = "TestWindow", const int width = 1366, const int height = 768)
 {
 	// Initialize GLFW
 	glfwInit();
@@ -54,10 +55,10 @@ int main()
 		glm::mat4 firstModel(1.0f);
 		glm::mat4 secondModel(1.0f);
 
-		firstModel = glm::translate(firstModel, glm::vec3(0.0f, 0.0f, -2.5f));
+		firstModel = glm::translate(firstModel, glm::vec3(-1.0f, 0.0f, -1.0f));
 		firstModel = glm::rotate(firstModel, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		secondModel = glm::translate(secondModel, glm::vec3(0.0f, 0.0f, -3.0f));
+		secondModel = glm::translate(secondModel, glm::vec3(1.0f, 0.0f, -3.0f));
 		secondModel = glm::rotate(secondModel, glm::radians(-angle * 10), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		vulkanRenderer.updateModel(0, firstModel);
