@@ -1,11 +1,10 @@
 ---
 layout: post
+title: 'The need behind a low-level graphics API'
 date: '2020-09-06 23:13 +0200'
 author: Albert Rodriguez
-published: false
-categories: ''
-excerpt: ''
-meta: ''
+published: true
+categories: DevJourney
 ---
 ## Leap of Faith Journey Week 1: The need behind a low-level graphics API
 For this week's journey there's something that's been behind my mind on my jump-start in Computer Graphics. As I mentioned on a previous post, my idea is to have an accelerated mentorship in Vulkan. As a developer I always try to understand the reason behind investing in certain tech. A reason which is always accompanied by a need in the market. In this article I'll try to give my perspective on that need.

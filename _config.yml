@@ -60,6 +60,11 @@ prose:
   media: 'assets'
   metadata:
     _posts:
+      - name: "title"
+        field:
+          label: "title"
+          element: "text"
+          value: "PLEASE SPECIFY A TITLE"
       - name: "layout"
         field:
           label: "layout"
