@@ -176,6 +176,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\compile_shaders.bat" />
+    <None Include="src\shaders\second.frag" />
+    <None Include="src\shaders\second.vert" />
     <None Include="src\shaders\shader.frag" />
     <None Include="src\shaders\shader.vert" />
   </ItemGroup>
