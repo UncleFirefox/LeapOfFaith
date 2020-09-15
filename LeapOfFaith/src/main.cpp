@@ -4,6 +4,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include "nlohmann/json.hpp"
+
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -13,7 +15,7 @@
 GLFWwindow* window;
 VulkanRenderer vulkanRenderer;
 
-void initWindow(std::string wName = "TestWindow", const int width = 1366, const int height = 768)
+void initWindow(std::string wName, const int width, const int height)
 {
 	// Initialize GLFW
 	glfwInit();
@@ -27,8 +29,12 @@ void initWindow(std::string wName = "TestWindow", const int width = 1366, const 
 
 int main()
 {
+	// Read configuration
+	std::ifstream jsonfs("config.json");
+	nlohmann::json config = nlohmann::json::parse(jsonfs);
+
 	// Create Window
-	initWindow();
+	initWindow("Leap Of Faith", config["width"], config["height"]);
 
 	// Create renderer instance
 	if (vulkanRenderer.init(window) == EXIT_FAILURE)
@@ -40,7 +46,7 @@ int main()
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
 
-	int helicopter = vulkanRenderer.createMeshModel("src/models/uh60.obj");
+	int helicopter = vulkanRenderer.createMeshModel(config["model"]);
 
 	// Loop
 	while (!glfwWindowShouldClose(window))

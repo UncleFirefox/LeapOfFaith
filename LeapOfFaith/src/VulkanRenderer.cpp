@@ -550,8 +550,8 @@ void VulkanRenderer::createPushConstantRange()
 void VulkanRenderer::createGraphicsPipeline()
 {
 	// Read in SPIR-V code of shaders
-	auto vertexShaderCode = readFile("src/shaders/vert.spv");
-	auto fragmentShaderCode = readFile("src/shaders/frag.spv");
+	auto vertexShaderCode = readFile("shaders/vert.spv");
+	auto fragmentShaderCode = readFile("shaders/frag.spv");
 
 	// Build Shader Modules to link to Graphics Pipeline
 	VkShaderModule vertexShaderModule = createShaderModule(vertexShaderCode);
@@ -1736,7 +1736,7 @@ stbi_uc* VulkanRenderer::loadTextureFile(std::string fileName, int* width, int* 
 	int channels;
 
 	// Load pixel data for image
-	std::string fileLoc = "src/textures/" + fileName;
+	std::string fileLoc = "textures/" + fileName;
 	stbi_uc* image = stbi_load(fileLoc.c_str(), width, height, &channels, STBI_rgb_alpha);
 
 	if (!image)
