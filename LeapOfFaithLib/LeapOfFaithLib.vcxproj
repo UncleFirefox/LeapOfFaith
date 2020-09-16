@@ -104,13 +104,14 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\LeapOfFaith.h" />
+    <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\MeshModel.h" />
     <ClInclude Include="src\Utilities.h" />
     <ClInclude Include="src\VulkanRenderer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshModel.cpp" />
     <ClCompile Include="src\VulkanRenderer.cpp" />
