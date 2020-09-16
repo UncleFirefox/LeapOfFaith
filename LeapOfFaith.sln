@@ -5,6 +5,10 @@ VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LeapOfFaith", "LeapOfFaith\LeapOfFaith.vcxproj", "{0639755C-9254-4F73-AD98-374592FB68C5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{C01347FB-C88D-4011-895F-150C23E1573E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LeapOfFaithLib", "LeapOfFaithLib\LeapOfFaithLib.vcxproj", "{16C373F9-D5A4-420B-A94A-E4CB42C56039}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,9 +19,17 @@ Global
 		{0639755C-9254-4F73-AD98-374592FB68C5}.Debug|x64.Build.0 = Debug|x64
 		{0639755C-9254-4F73-AD98-374592FB68C5}.Release|x64.ActiveCfg = Release|x64
 		{0639755C-9254-4F73-AD98-374592FB68C5}.Release|x64.Build.0 = Release|x64
+		{16C373F9-D5A4-420B-A94A-E4CB42C56039}.Debug|x64.ActiveCfg = Debug|x64
+		{16C373F9-D5A4-420B-A94A-E4CB42C56039}.Debug|x64.Build.0 = Debug|x64
+		{16C373F9-D5A4-420B-A94A-E4CB42C56039}.Release|x64.ActiveCfg = Release|x64
+		{16C373F9-D5A4-420B-A94A-E4CB42C56039}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0639755C-9254-4F73-AD98-374592FB68C5} = {C01347FB-C88D-4011-895F-150C23E1573E}
+		{16C373F9-D5A4-420B-A94A-E4CB42C56039} = {C01347FB-C88D-4011-895F-150C23E1573E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2E261555-47C5-45C0-8BF3-C04226810044}
