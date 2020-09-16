@@ -1,16 +1,9 @@
-#define STB_IMAGE_IMPLEMENTATION
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
+#include "LeapOfFaith.h"
 #include "nlohmann/json.hpp"
 
 #include <iostream>
 #include <stdexcept>
 #include <vector>
-
-#include "VulkanRenderer.h"
 
 GLFWwindow* window;
 VulkanRenderer vulkanRenderer;

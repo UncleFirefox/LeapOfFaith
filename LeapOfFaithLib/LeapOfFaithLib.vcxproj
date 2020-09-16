@@ -21,32 +21,32 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{0639755c-9254-4f73-ad98-374592fb68c5}</ProjectGuid>
-    <RootNamespace>Project1</RootNamespace>
+    <ProjectGuid>{16c373f9-d5a4-420b-a94a-e4cb42c56039}</ProjectGuid>
+    <RootNamespace>LeapOfFaithLib</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -94,24 +94,24 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)LeapOfFaithLib\src;$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)dependencies\glm\include;$(SolutionDir)dependencies\stbimage\include;$(SolutionDir)dependencies\assimp\include;$(SolutionDir)dependencies\nlohmann-json\include</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeaderOutputFile />
+      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)dependencies\glm\include;$(SolutionDir)dependencies\stbimage\include;$(SolutionDir)dependencies\assimp\include;$(SolutionDir)dependencies\nlohmann-json\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /y /i $(ProjectDir)config.json $(OutDir)
-xcopy /y /i $(SolutionDir)Dependencies\assimp\*.dll $(OutDir)
-xcopy /y /i $(SolutionDir)LeapOfFaithLib\src\shaders\*.spv $(OutDir)shaders
-xcopy /y /i $(SolutionDir)models $(OutDir)models
-xcopy /y /i $(SolutionDir)textures $(OutDir)textures</Command>
-    </PostBuildEvent>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)dependencies\vulkan\lib;$(SolutionDir)dependencies\glfw\lib;$(SolutionDir)dependencies\assimp\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -119,49 +119,49 @@ xcopy /y /i $(SolutionDir)textures $(OutDir)textures</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)LeapOfFaithLib\src;$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)dependencies\glm\include;$(SolutionDir)dependencies\stbimage\include;$(SolutionDir)dependencies\assimp\include;$(SolutionDir)dependencies\nlohmann-json\include</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeaderOutputFile />
+      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)dependencies\glm\include;$(SolutionDir)dependencies\stbimage\include;$(SolutionDir)dependencies\assimp\include;$(SolutionDir)dependencies\nlohmann-json\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /y /i $(ProjectDir)config.json $(OutDir)
-xcopy /y /i $(SolutionDir)Dependencies\assimp\*.dll $(OutDir)
-xcopy /y /i $(SolutionDir)LeapOfFaithLib\src\shaders\*.spv $(OutDir)shaders
-xcopy /y /i $(SolutionDir)models $(OutDir)models
-xcopy /y /i $(SolutionDir)textures $(OutDir)textures</Command>
-    </PostBuildEvent>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)dependencies\vulkan\lib;$(SolutionDir)dependencies\glfw\lib;$(SolutionDir)dependencies\assimp\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)LeapOfFaithLib\src;$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)dependencies\glm\include;$(SolutionDir)dependencies\stbimage\include;$(SolutionDir)dependencies\assimp\include;$(SolutionDir)dependencies\nlohmann-json\include</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeaderOutputFile />
+      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)dependencies\glm\include;$(SolutionDir)dependencies\stbimage\include;$(SolutionDir)dependencies\assimp\include;$(SolutionDir)dependencies\nlohmann-json\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /y /i $(ProjectDir)config.json $(OutDir)
-xcopy /y /i $(SolutionDir)Dependencies\assimp\*.dll $(OutDir)
-xcopy /y /i $(SolutionDir)LeapOfFaithLib\src\shaders\*.spv $(OutDir)shaders
-xcopy /y /i $(SolutionDir)models $(OutDir)models
-xcopy /y /i $(SolutionDir)textures $(OutDir)textures</Command>
-    </PostBuildEvent>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)dependencies\vulkan\lib;$(SolutionDir)dependencies\glfw\lib;$(SolutionDir)dependencies\assimp\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -169,37 +169,43 @@ xcopy /y /i $(SolutionDir)textures $(OutDir)textures</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)LeapOfFaithLib\src;$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)dependencies\glm\include;$(SolutionDir)dependencies\stbimage\include;$(SolutionDir)dependencies\assimp\include;$(SolutionDir)dependencies\nlohmann-json\include</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeaderOutputFile />
+      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\vulkan\include;$(SolutionDir)dependencies\glfw\include;$(SolutionDir)dependencies\glm\include;$(SolutionDir)dependencies\stbimage\include;$(SolutionDir)dependencies\assimp\include;$(SolutionDir)dependencies\nlohmann-json\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /y /i $(ProjectDir)config.json $(OutDir)
-xcopy /y /i $(SolutionDir)Dependencies\assimp\*.dll $(OutDir)
-xcopy /y /i $(SolutionDir)LeapOfFaithLib\src\shaders\*.spv $(OutDir)shaders
-xcopy /y /i $(SolutionDir)models $(OutDir)models
-xcopy /y /i $(SolutionDir)textures $(OutDir)textures</Command>
-    </PostBuildEvent>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)dependencies\vulkan\lib;$(SolutionDir)dependencies\glfw\lib;$(SolutionDir)dependencies\assimp\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp" />
+    <ClInclude Include="src\LeapOfFaith.h" />
+    <ClInclude Include="src\Mesh.h" />
+    <ClInclude Include="src\MeshModel.h" />
+    <ClInclude Include="src\Utilities.h" />
+    <ClInclude Include="src\VulkanRenderer.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.json" />
+    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\MeshModel.cpp" />
+    <ClCompile Include="src\VulkanRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LeapOfFaithLib\LeapOfFaithLib.vcxproj">
-      <Project>{16c373f9-d5a4-420b-a94a-e4cb42c56039}</Project>
-    </ProjectReference>
+    <None Include="src\shaders\compile_shaders.bat" />
+    <None Include="src\shaders\shader.frag" />
+    <None Include="src\shaders\shader.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
