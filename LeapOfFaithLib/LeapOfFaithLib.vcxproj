@@ -104,6 +104,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\ModelImporter.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\MeshModel.h" />
@@ -111,6 +112,7 @@
     <ClInclude Include="src\VulkanRenderer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ModelImporter.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshModel.cpp" />

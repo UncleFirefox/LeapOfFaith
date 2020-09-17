@@ -31,14 +31,6 @@ void MeshModel::setModel(glm::mat4 newModel)
 	model = newModel;
 }
 
-void MeshModel::destroyMeshModel()
-{
-	for (auto& mesh : meshList)
-	{
-		mesh.destroyBuffers();
-	}
-}
-
 std::vector<std::string> MeshModel::LoadMaterials(const aiScene* scene)
 {
 	// Create 1:1 sized list of textures
@@ -136,11 +128,7 @@ Mesh MeshModel::LoadMesh(VkPhysicalDevice newPhysicalDevice, VkDevice newDevice,
 	}
 
 	// Create new mesh with details and return it
-	Mesh newMesh = Mesh(newPhysicalDevice, newDevice, transferQueue, transferCommandPool, &vertices, &indices, matToTex[mesh->mMaterialIndex]);
+	Mesh newMesh = Mesh(&vertices, &indices, matToTex[mesh->mMaterialIndex]);
 
 	return newMesh;
-}
-
-MeshModel::~MeshModel()
-{
 }

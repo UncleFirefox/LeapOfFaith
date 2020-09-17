@@ -38,11 +38,11 @@ int Engine::start()
 	{
 		glfwPollEvents();
 
-		float now = glfwGetTime();
+		float now = (float)glfwGetTime();
 		deltaTime = now - lastTime;
 		lastTime = now;
 
-		angle += 10.0 * deltaTime;
+		angle += 10.0f * deltaTime;
 		if (angle > 360.0f) { angle -= 360.0f; }
 
 		glm::mat4 testMat = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -55,6 +55,8 @@ int Engine::start()
 	vulkanRenderer.cleanup();
 	glfwDestroyWindow(window);
 	glfwTerminate();
+
+	return EXIT_SUCCESS;
 }
 
 void Engine::initWindow(std::string wName, const int width, const int height)

@@ -1,4 +1,5 @@
 #include "VulkanRenderer.h"
+#include "ModelImporter.h"
 
 int VulkanRenderer::init(GLFWwindow* newWindow)
 {
@@ -114,7 +115,8 @@ void VulkanRenderer::cleanup()
 
 	for (size_t i = 0; i < modelList.size(); i++)
 	{
-		modelList[i].destroyMeshModel();
+		// TODO: Destroy all allocated meshes
+		//modelList[i].destroyMeshModel();
 	}
 
 	vkDestroyDescriptorPool(mainDevice.logicalDevice, samplerDescriptorPool, nullptr);
@@ -544,7 +546,7 @@ void VulkanRenderer::createPushConstantRange()
 	// Define push constant values (no 'create' needed)
 	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // Shader stage push constant constant will go to
 	pushConstantRange.offset = 0; // Offset into given data to pass to push constant
-	pushConstantRange.size = sizeof(Model); // Size of data being passed
+	pushConstantRange.size = sizeof(glm::mat4); // Size of data being passed
 }
 
 void VulkanRenderer::createGraphicsPipeline()
@@ -1100,7 +1102,7 @@ void VulkanRenderer::recordCommands(uint32_t currentImage)
 			pipelineLayout,
 			VK_SHADER_STAGE_VERTEX_BIT, // Stage to push constants to
 			0,
-			sizeof(Model), // Size of data being pushed
+			sizeof(glm::mat4), // Size of data being pushed
 			&thisModel.getModel()
 		);
 
@@ -1690,38 +1692,29 @@ int VulkanRenderer::createTextureDescriptor(VkImageView textureImage)
 
 int VulkanRenderer::createMeshModel(std::string modelFile)
 {
-	// Import model "scene"
-	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(modelFile, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
-	if (!scene)
-	{
-		throw std::runtime_error("Failed to load model! (" + modelFile + ")");
-	}
-
-	// Get vector of all materials with 1:1 ID placement
-	std::vector<std::string> textureNames = MeshModel::LoadMaterials(scene);
+	ImportResult result = ModelImporter::createMeshModel(modelFile);
 
 	// Conversion from the materials list IDs to our Descriptor Array IDs
-	std::vector<int> matToTex(textureNames.size());
+	std::vector<int> matToTex(result.textureNames.size());
 
 	// Loop over textureNames and create textures for them
-	for (size_t i = 0; i < textureNames.size(); i++)
+	for (size_t i = 0; i < result.textureNames.size(); i++)
 	{
 		// If material had no texture, set '0' to indicate no texture, texture 0 will be reserved for a default texture
-		if (textureNames[i].empty())
+		if (result.textureNames[i].empty())
 		{
 			matToTex[i] = 0;
 		}
 		else
 		{
 			// Otherwise, create texture and set value to index of new texture
-			matToTex[i] = createTexture(textureNames[i]);
+			matToTex[i] = createTexture(result.textureNames[i]);
 		}
 	}
 
 	// Load in all our meshes
 	std::vector<Mesh> modelMeshes = MeshModel::LoadNode(mainDevice.physicalDevice, mainDevice.logicalDevice, graphicsQueue, graphicsCommandPool,
-		scene->mRootNode, scene, matToTex);
+		result.scene->mRootNode, result.scene, matToTex);
 
 	// Create mesh model and add to list
 	MeshModel meshModel = MeshModel(modelMeshes);
