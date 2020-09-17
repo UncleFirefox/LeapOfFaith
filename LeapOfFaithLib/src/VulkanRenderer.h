@@ -81,9 +81,7 @@ private:
 	std::vector<VkBuffer> modelDUniformBuffer;
 	std::vector<VkDeviceMemory> modelDUniformBufferMemory;
 
-	//VkDeviceSize minUniformBufferOffset;
-	//size_t modelUniformAlignment;
-	//Model* modelTransferSpace;
+	std::vector<MeshBuffer> meshBuffers;
 
 	// Assets
 

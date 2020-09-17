@@ -115,12 +115,12 @@ void VulkanRenderer::cleanup()
 	// Wait until all commands execute before destroying
 	vkDeviceWaitIdle(mainDevice.logicalDevice);
 
-	//_aligned_free(modelTransferSpace);
-
-	for (size_t i = 0; i < modelList.size(); i++)
+	for (size_t i = 0; i < meshBuffers.size(); i++)
 	{
-		// TODO: Destroy all allocated meshes
-		//modelList[i].destroyMeshModel();
+		vkDestroyBuffer(mainDevice.logicalDevice, meshBuffers[i].vertexBuffer, nullptr);
+		vkFreeMemory(mainDevice.logicalDevice, meshBuffers[i].vertexBufferMemory, nullptr);
+		vkDestroyBuffer(mainDevice.logicalDevice, meshBuffers[i].indexBuffer, nullptr);
+		vkFreeMemory(mainDevice.logicalDevice, meshBuffers[i].indexBufferMemory, nullptr);
 	}
 
 	vkDestroyDescriptorPool(mainDevice.logicalDevice, samplerDescriptorPool, nullptr);
@@ -145,8 +145,6 @@ void VulkanRenderer::cleanup()
 	{
 		vkDestroyBuffer(mainDevice.logicalDevice, vpUniformBuffer[i], nullptr);
 		vkFreeMemory(mainDevice.logicalDevice, vpUniformBufferMemory[i], nullptr);
-		//vkDestroyBuffer(mainDevice.logicalDevice, modelDUniformBuffer[i], nullptr);
-		//vkFreeMemory(mainDevice.logicalDevice, modelDUniformBufferMemory[i], nullptr);
 	}
 	for (size_t i = 0; i < MAX_FRAME_DRAWS; i++)
 	{
@@ -1720,7 +1718,7 @@ int VulkanRenderer::createMeshModel(std::string modelFile)
 	std::vector<Mesh> modelMeshes = MeshModel::LoadNode(mainDevice.physicalDevice, mainDevice.logicalDevice, graphicsQueue, graphicsCommandPool,
 		result.scene->mRootNode, result.scene, matToTex);
 
-	//std::vector<MeshBuffer> buffers = allocateMeshes(modelMeshes);
+	meshBuffers = allocateMeshes(modelMeshes, graphicsQueue, graphicsCommandPool);
 
 	// Create mesh model and add to list
 	MeshModel meshModel = MeshModel(modelMeshes);
