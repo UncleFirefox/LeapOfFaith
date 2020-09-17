@@ -14,15 +14,14 @@ public:
 	Mesh(std::vector<Vertex>* vertices, std::vector<uint32_t>* indices, int newTexId);
 
 	void setModel(glm::mat4 newModel);
-	glm::mat4 getModel();
+	glm::mat4 model;
+	std::vector<Vertex>* vertices;
+	std::vector<uint32_t>* indices;
 
 	int getTexId();
 	int getVertexCount();
 	int getIndexCount();
 private:
-	glm::mat4 model;
-	std::vector<Vertex>* vertices;
-	std::vector<uint32_t>* indices;
 	int vertexCount;
 	int indexCount;
 	int texId;

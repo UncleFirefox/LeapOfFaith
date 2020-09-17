@@ -3,14 +3,7 @@
 #include <iostream>
 #include <vector>
 
-// Forward declaration
-struct aiScene;
-
-struct ImportResult
-{
-	std::vector<std::string> textureNames;
-	const aiScene* scene;
-};
+#include "TempStructures.h"
 
 class ModelImporter
 {

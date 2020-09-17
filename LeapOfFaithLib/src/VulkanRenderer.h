@@ -17,6 +17,7 @@
 #include "Mesh.h"
 #include "MeshModel.h"
 #include "Utilities.h"
+#include "TempStructures.h"
 
 class VulkanRenderer
 {
@@ -179,5 +180,6 @@ private:
 
 	// Loader functions
 	stbi_uc* loadTextureFile(std::string fileName, int* width, int* height, VkDeviceSize* imageSize);
+	std::vector<MeshBuffer> allocateMeshes(std::vector<Mesh> meshes, VkQueue transferQueue, VkCommandPool transferCommandPool);
 };
 

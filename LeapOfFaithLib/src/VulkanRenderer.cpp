@@ -1,5 +1,9 @@
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
 #include "VulkanRenderer.h"
 #include "ModelImporter.h"
+
 
 int VulkanRenderer::init(GLFWwindow* newWindow)
 {
@@ -1108,12 +1112,12 @@ void VulkanRenderer::recordCommands(uint32_t currentImage)
 
 		for (size_t k = 0; k < thisModel.getMeshCount(); k++)
 		{
-			VkBuffer vertexBuffers[] = { thisModel.getMesh(k)->getVertexBuffer() }; // Buffers to bind
+			//VkBuffer vertexBuffers[] = { thisModel.getMesh(k)->getVertexBuffer() }; // Buffers to bind
 			VkDeviceSize offsets[] = { 0 }; // Offsets into buffers being bound
-			vkCmdBindVertexBuffers(commandBuffers[currentImage], 0, 1, vertexBuffers, offsets); // Command to bind vertex buffer before drawing with them
+			//vkCmdBindVertexBuffers(commandBuffers[currentImage], 0, 1, vertexBuffers, offsets); // Command to bind vertex buffer before drawing with them
 
 			// Bind mesh index buffer, with 0 offset and using uint32 type
-			vkCmdBindIndexBuffer(commandBuffers[currentImage], thisModel.getMesh(k)->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			//vkCmdBindIndexBuffer(commandBuffers[currentImage], thisModel.getMesh(k)->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 			// Dynamic offset amount
 			//uint32_t dynamicOffset = static_cast<uint32_t>(modelUniformAlignment) * j;
@@ -1716,6 +1720,8 @@ int VulkanRenderer::createMeshModel(std::string modelFile)
 	std::vector<Mesh> modelMeshes = MeshModel::LoadNode(mainDevice.physicalDevice, mainDevice.logicalDevice, graphicsQueue, graphicsCommandPool,
 		result.scene->mRootNode, result.scene, matToTex);
 
+	//std::vector<MeshBuffer> buffers = allocateMeshes(modelMeshes);
+
 	// Create mesh model and add to list
 	MeshModel meshModel = MeshModel(modelMeshes);
 	modelList.push_back(meshModel);
@@ -1741,4 +1747,77 @@ stbi_uc* VulkanRenderer::loadTextureFile(std::string fileName, int* width, int* 
 	*imageSize = (*width) * (*height) * 4;
 
 	return image;
+}
+
+std::vector<MeshBuffer> VulkanRenderer::allocateMeshes(std::vector<Mesh> meshes, VkQueue transferQueue, VkCommandPool transferCommandPool)
+{
+	std::vector<MeshBuffer> result;
+	result.resize(meshes.size());
+
+	for (size_t i = 0; i < meshes.size(); i++) 
+	{
+		// ---- VERTICES
+		VkBuffer vertexBuffer;
+		VkDeviceMemory vertexBufferMemory;
+
+		// Get size of buffer needed for vertices	
+		VkDeviceSize bufferSize = sizeof(Vertex) * meshes[i].getVertexCount();
+
+		// Temporary buffer to "state" vertex data before transferring to GPU	
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+
+		// Create buffer and allocate memory to it	
+		createBuffer(mainDevice.physicalDevice, mainDevice.logicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory);
+
+		// MAP MEMORY TO VERTEX BUFFER	
+		void* data;																// 1. Create pointer to a point in normal memory	
+		vkMapMemory(mainDevice.logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);		// 2. "Map" the vertex buffer memory to that point	
+		memcpy(data, meshes[i].vertices->data(), (size_t)bufferSize);					// 3. Copy memory from vertices vector to the point	
+		vkUnmapMemory(mainDevice.logicalDevice, stagingBufferMemory);									// 4. Unmap the vertex buffer memory	
+
+		// Create buffer with TRANSFER_DST_BIT to mark as recipient of transfer data (also VERTEX_BUFFER)	
+		// Buffer memory is to be DEVICE_LOCAL_BIT meaning memory is on the GPU and only accesible by it and not CPU (host)	
+		createBuffer(mainDevice.physicalDevice, mainDevice.logicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &vertexBuffer, &vertexBufferMemory);
+
+		// Copy staging buffer to vertex buffer on GPU	
+		copyBuffer(mainDevice.logicalDevice, transferQueue, transferCommandPool, stagingBuffer, vertexBuffer, bufferSize);
+
+		// Clean up staging buffer parts	
+		vkDestroyBuffer(mainDevice.logicalDevice, stagingBuffer, nullptr);
+		vkFreeMemory(mainDevice.logicalDevice, stagingBufferMemory, nullptr);
+
+		// ---- INDICES
+		VkBuffer indexBuffer;
+		VkDeviceMemory indexBufferMemory;
+
+		// Get size of buffer needed for indices	
+		bufferSize = sizeof(uint32_t) * meshes[i].getIndexCount();
+
+		// Temporary buffer to stage index data before transferring to GPU	
+		createBuffer(mainDevice.physicalDevice, mainDevice.logicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory);
+
+		// MAP MEMORY TO INDEX BUFFER	
+		vkMapMemory(mainDevice.logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+		memcpy(data, meshes[i].indices->data(), (size_t)bufferSize);
+		vkUnmapMemory(mainDevice.logicalDevice, stagingBufferMemory);
+
+		// Create buffer for INDEX data on GPU access only area	
+		createBuffer(mainDevice.physicalDevice, mainDevice.logicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &indexBuffer, &indexBufferMemory);
+
+		// Copy from staging buffer to GPU access buffer	
+		copyBuffer(mainDevice.logicalDevice, transferQueue, transferCommandPool, stagingBuffer, indexBuffer, bufferSize);
+
+		// Destroy + release staging buffer resources	
+		vkDestroyBuffer(mainDevice.logicalDevice, stagingBuffer, nullptr);
+		vkFreeMemory(mainDevice.logicalDevice, stagingBufferMemory, nullptr);
+
+		result.push_back(MeshBuffer{ vertexBuffer, vertexBufferMemory, indexBuffer, indexBufferMemory });
+	}
+
+	return result;
 }

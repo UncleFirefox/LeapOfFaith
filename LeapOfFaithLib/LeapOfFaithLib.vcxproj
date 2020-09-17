@@ -108,6 +108,7 @@
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\MeshModel.h" />
+    <ClInclude Include="src\TempStructures.h" />
     <ClInclude Include="src\Utilities.h" />
     <ClInclude Include="src\VulkanRenderer.h" />
   </ItemGroup>
