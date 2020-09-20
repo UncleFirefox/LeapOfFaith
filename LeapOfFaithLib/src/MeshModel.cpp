@@ -45,7 +45,7 @@ void MeshModel::Load(const std::string& modelFile)
 
 	// Load in all our meshes
 	std::vector<Mesh> modelMeshes = LoadNode(Globals::mainDevice->physicalDevice, Globals::mainDevice->logicalDevice, 
-		Globals::graphicsQueue, Globals::graphicsCommandPool, scene->mRootNode, scene, matToTex);
+		*Globals::graphicsQueue, *Globals::graphicsCommandPool, scene->mRootNode, scene, matToTex);
 }
 
 int MeshModel::createTexture(const std::string& fileName)
@@ -54,8 +54,8 @@ int MeshModel::createTexture(const std::string& fileName)
 	int textureImageLoc = createTextureImage(fileName);
 
 	// Create image view and add to list
-	VkImageView imageView = createImageView(Globals::textureImages[textureImageLoc], VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
-	Globals::textureImageViews.push_back(imageView);
+	VkImageView imageView = createImageView((*Globals::textureImages)[textureImageLoc], VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+	Globals::textureImageViews->push_back(imageView);
 
 	// Create texture descriptor
 	int descriptorLoc = createTextureDescriptor(imageView);
@@ -96,26 +96,26 @@ int MeshModel::createTextureImage(const std::string& fileName)
 	// Copy data to image
 
 	// Transition image to be DST for copy operation
-	transitionImageLayout(Globals::mainDevice->logicalDevice, Globals::graphicsQueue, Globals::graphicsCommandPool,
+	transitionImageLayout(Globals::mainDevice->logicalDevice, *Globals::graphicsQueue, *Globals::graphicsCommandPool,
 		texImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 	// Copy image data
-	copyImageBuffer(Globals::mainDevice->logicalDevice, Globals::graphicsQueue, Globals::graphicsCommandPool, imageStagingBuffer, texImage, width, height);
+	copyImageBuffer(Globals::mainDevice->logicalDevice, *Globals::graphicsQueue, *Globals::graphicsCommandPool, imageStagingBuffer, texImage, width, height);
 
 	// Transition image to be shader readable for shader usage
-	transitionImageLayout(Globals::mainDevice->logicalDevice, Globals::graphicsQueue, Globals::graphicsCommandPool,
+	transitionImageLayout(Globals::mainDevice->logicalDevice, *Globals::graphicsQueue, *Globals::graphicsCommandPool,
 		texImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	// Add texture data to vector for reference
-	Globals::textureImages.push_back(texImage);
-	Globals::textureImageMemory.push_back(texImageMemory);
+	Globals::textureImages->push_back(texImage);
+	Globals::textureImageMemory->push_back(texImageMemory);
 
 	// Destroy staging buffer
 	vkDestroyBuffer(Globals::mainDevice->logicalDevice, imageStagingBuffer, nullptr);
 	vkFreeMemory(Globals::mainDevice->logicalDevice, imageStagingBufferMemory, nullptr);
 
 	// Return index to the new image
-	return Globals::textureImages.size() - 1;
+	return Globals::textureImages->size() - 1;
 }
 
 int MeshModel::createTextureDescriptor(VkImageView textureImage)
@@ -125,9 +125,9 @@ int MeshModel::createTextureDescriptor(VkImageView textureImage)
 	// Descriptor set allocation info
 	VkDescriptorSetAllocateInfo setAllocInfo = {};
 	setAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	setAllocInfo.descriptorPool = Globals::samplerDescriptorPool;
+	setAllocInfo.descriptorPool = *Globals::samplerDescriptorPool;
 	setAllocInfo.descriptorSetCount = 1;
-	setAllocInfo.pSetLayouts = &Globals::samplerSetLayout;
+	setAllocInfo.pSetLayouts = Globals::samplerSetLayout;
 
 	// Allocate Descriptor Sets
 	VkResult result = vkAllocateDescriptorSets(Globals::mainDevice->logicalDevice, &setAllocInfo, &descriptorSet);
@@ -140,7 +140,7 @@ int MeshModel::createTextureDescriptor(VkImageView textureImage)
 	VkDescriptorImageInfo imageInfo = {};
 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; //Image layout when in use
 	imageInfo.imageView = textureImage; // Image to bind to set
-	imageInfo.sampler = Globals::textureSampler; // Sampler to use for set
+	imageInfo.sampler = *Globals::textureSampler; // Sampler to use for set
 
 	// Descriptor write info
 	VkWriteDescriptorSet descriptorWrite = {};
@@ -156,10 +156,10 @@ int MeshModel::createTextureDescriptor(VkImageView textureImage)
 	vkUpdateDescriptorSets(Globals::mainDevice->logicalDevice, 1, &descriptorWrite, 0, nullptr);
 
 	// Add descriptor set to list
-	Globals::samplerDescriptorSets.push_back(descriptorSet);
+	Globals::samplerDescriptorSets->push_back(descriptorSet);
 
 	// Return descriptor set location
-	return Globals::samplerDescriptorSets.size() - 1;
+	return Globals::samplerDescriptorSets->size() - 1;
 }
 
 VkImageView MeshModel::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)

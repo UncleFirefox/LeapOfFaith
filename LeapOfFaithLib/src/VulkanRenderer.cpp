@@ -80,7 +80,7 @@ void VulkanRenderer::draw()
 	submitInfo.pSignalSemaphores = &renderFinished[currentFrame]; // Semaphores to signal when command buffer finishes
 
 	// Submit command buffer to queue
-	VkResult result = vkQueueSubmit(Globals::graphicsQueue, 1, &submitInfo, drawFences[currentFrame]);
+	VkResult result = vkQueueSubmit(*Globals::graphicsQueue, 1, &submitInfo, drawFences[currentFrame]);
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to submit command buffer to queue!");
@@ -118,16 +118,16 @@ void VulkanRenderer::cleanup()
 		modelList[i].destroyMeshModel();
 	}
 
-	vkDestroyDescriptorPool(Globals::mainDevice->logicalDevice, Globals::samplerDescriptorPool, nullptr);
-	vkDestroyDescriptorSetLayout(Globals::mainDevice->logicalDevice, Globals::samplerSetLayout, nullptr);
+	vkDestroyDescriptorPool(Globals::mainDevice->logicalDevice, *Globals::samplerDescriptorPool, nullptr);
+	vkDestroyDescriptorSetLayout(Globals::mainDevice->logicalDevice, *Globals::samplerSetLayout, nullptr);
 
-	vkDestroySampler(Globals::mainDevice->logicalDevice, Globals::textureSampler, nullptr);
+	vkDestroySampler(Globals::mainDevice->logicalDevice, *Globals::textureSampler, nullptr);
 
-	for (size_t i = 0; i < Globals::textureImages.size(); i++)
+	for (size_t i = 0; i < Globals::textureImages->size(); i++)
 	{
-		vkDestroyImageView(Globals::mainDevice->logicalDevice, Globals::textureImageViews[i], nullptr);
-		vkDestroyImage(Globals::mainDevice->logicalDevice, Globals::textureImages[i], nullptr);
-		vkFreeMemory(Globals::mainDevice->logicalDevice, Globals::textureImageMemory[i], nullptr);
+		vkDestroyImageView(Globals::mainDevice->logicalDevice, (*Globals::textureImageViews)[i], nullptr);
+		vkDestroyImage(Globals::mainDevice->logicalDevice, (*Globals::textureImages)[i], nullptr);
+		vkFreeMemory(Globals::mainDevice->logicalDevice, (*Globals::textureImageMemory)[i], nullptr);
 	}
 
 	vkDestroyImageView(Globals::mainDevice->logicalDevice, depthBufferImageView, nullptr);
@@ -149,7 +149,7 @@ void VulkanRenderer::cleanup()
 		vkDestroySemaphore(Globals::mainDevice->logicalDevice, imageAvailable[i], nullptr);
 		vkDestroyFence(Globals::mainDevice->logicalDevice, drawFences[i], nullptr);
 	}
-	vkDestroyCommandPool(Globals::mainDevice->logicalDevice, Globals::graphicsCommandPool, nullptr);
+	vkDestroyCommandPool(Globals::mainDevice->logicalDevice, *Globals::graphicsCommandPool, nullptr);
 	for (auto framebuffer : swapChainFramebuffers)
 	{
 		vkDestroyFramebuffer(Globals::mainDevice->logicalDevice, framebuffer, nullptr);
@@ -279,7 +279,7 @@ void VulkanRenderer::createLogicalDevice()
 	// Queues are created at the same time as the device...
 	// So we want handle to queues
 	// From given logical device, of given queue family, of given queue index (0 since only one queue) place reference of given VkQueue
-	vkGetDeviceQueue(Globals::mainDevice->logicalDevice, indices.graphicsFamily, 0, &Globals::graphicsQueue);
+	vkGetDeviceQueue(Globals::mainDevice->logicalDevice, indices.graphicsFamily, 0, Globals::graphicsQueue);
 	vkGetDeviceQueue(Globals::mainDevice->logicalDevice, indices.presentationFamily, 0, &presentationQueue);
 }
 
@@ -531,7 +531,7 @@ void VulkanRenderer::createDescriptorSetLayout()
 	textureLayoutCreateInfo.pBindings = &samplerLayoutBinding;
 
 	// Create descriptor set layout
-	result = vkCreateDescriptorSetLayout(Globals::mainDevice->logicalDevice, &textureLayoutCreateInfo, nullptr, &Globals::samplerSetLayout);
+	result = vkCreateDescriptorSetLayout(Globals::mainDevice->logicalDevice, &textureLayoutCreateInfo, nullptr, Globals::samplerSetLayout);
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create a Descriptor Set Layout!");
@@ -696,7 +696,7 @@ void VulkanRenderer::createGraphicsPipeline()
 	colorBlendingCreateInfo.pAttachments = &colorState;
 
 	// Pipeline layout
-	std::array<VkDescriptorSetLayout, 2> descriptorSetLayouts = { descriptorSetLayout, Globals::samplerSetLayout };
+	std::array<VkDescriptorSetLayout, 2> descriptorSetLayouts = { descriptorSetLayout, *Globals::samplerSetLayout };
 
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -816,7 +816,7 @@ void VulkanRenderer::createCommandPool()
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily; // Queue Family type buffers from this command pool will use
 
 	// Create a Graphics queue family command pool
-	VkResult result = vkCreateCommandPool(Globals::mainDevice->logicalDevice, &poolInfo, nullptr, &Globals::graphicsCommandPool);
+	VkResult result = vkCreateCommandPool(Globals::mainDevice->logicalDevice, &poolInfo, nullptr, Globals::graphicsCommandPool);
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create a Command Pool!");
@@ -830,7 +830,7 @@ void VulkanRenderer::createCommandBuffers()
 
 	VkCommandBufferAllocateInfo cbAllocInfo = {};
 	cbAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cbAllocInfo.commandPool = Globals::graphicsCommandPool;
+	cbAllocInfo.commandPool = *Globals::graphicsCommandPool;
 	cbAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY; // Buffer you submit directly to queue, cant be called by other buffers
 	cbAllocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 
@@ -887,7 +887,7 @@ void VulkanRenderer::createTextureSampler()
 	samplerCreateInfo.anisotropyEnable = VK_TRUE; // Enable anisotropy (makes less aliasing when looking things further away)
 	samplerCreateInfo.maxAnisotropy = 16; // Anisotropy sample level
 
-	VkResult result = vkCreateSampler(Globals::mainDevice->logicalDevice, &samplerCreateInfo, nullptr, &Globals::textureSampler);
+	VkResult result = vkCreateSampler(Globals::mainDevice->logicalDevice, &samplerCreateInfo, nullptr, Globals::textureSampler);
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create a Texture Sampler!");
@@ -962,7 +962,7 @@ void VulkanRenderer::createDescriptorPool()
 	samplerPoolCreateInfo.poolSizeCount = 1;
 	samplerPoolCreateInfo.pPoolSizes = &samplerPoolSize;
 
-	result = vkCreateDescriptorPool(Globals::mainDevice->logicalDevice, &samplerPoolCreateInfo, nullptr, &Globals::samplerDescriptorPool);
+	result = vkCreateDescriptorPool(Globals::mainDevice->logicalDevice, &samplerPoolCreateInfo, nullptr, Globals::samplerDescriptorPool);
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create a Descriptor Pool!");
@@ -1118,7 +1118,7 @@ void VulkanRenderer::recordCommands(uint32_t currentImage)
 			//uint32_t dynamicOffset = static_cast<uint32_t>(modelUniformAlignment) * j;
 
 			std::array<VkDescriptorSet, 2> decriptorSetGroup = { descriptorSets[currentImage],
-				Globals::samplerDescriptorSets[thisModel.getMesh(k)->getTexId()] };
+				(*Globals::samplerDescriptorSets)[thisModel.getMesh(k)->getTexId()] };
 
 			// Bind descriptor sets
 			vkCmdBindDescriptorSets(commandBuffers[currentImage], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,

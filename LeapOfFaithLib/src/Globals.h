@@ -1,4 +1,5 @@
 #pragma once
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
@@ -12,16 +13,16 @@ namespace Globals {
 
 	extern MainDevice* mainDevice;
 
-	VkQueue graphicsQueue;
-	VkCommandPool graphicsCommandPool;
+	extern VkQueue* graphicsQueue;
+	extern VkCommandPool* graphicsCommandPool;
 
-	std::vector<VkImage> textureImages;
-	std::vector<VkImageView> textureImageViews;
-	std::vector<VkDeviceMemory> textureImageMemory;
+	extern std::vector<VkImage>* textureImages;
+	extern std::vector<VkImageView>*textureImageViews;
+	extern std::vector<VkDeviceMemory>* textureImageMemory;
 
-	VkDescriptorPool samplerDescriptorPool;
-	VkDescriptorSetLayout samplerSetLayout;
-	VkSampler textureSampler;
-	std::vector<VkDescriptorSet> samplerDescriptorSets;
+	extern VkDescriptorPool* samplerDescriptorPool;
+	extern VkDescriptorSetLayout* samplerSetLayout;
+	extern VkSampler* textureSampler;
+	extern std::vector<VkDescriptorSet>* samplerDescriptorSets;
 }
 
