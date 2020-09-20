@@ -7,6 +7,8 @@
 
 #include "Mesh.h"
 
+typedef unsigned char stbi_uc;
+
 struct aiScene;
 struct aiNode;
 struct aiMesh;
@@ -27,6 +29,12 @@ public:
 	void destroyMeshModel();
 
 	static std::vector<std::string> LoadMaterials(const aiScene* scene);
+	static stbi_uc* loadTextureFile(const std::string& fileName, int* width, int* height, VkDeviceSize* imageSize);
+	static int createTextureImage(const std::string& fileName, VkPhysicalDevice& physicalDevice, VkDevice& logicalDevice,
+		VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory> textureImageMemory);
+	static VkImage createImage(uint32_t width, uint32_t height, VkFormat format,
+		VkImageTiling tiling, VkImageUsageFlags usageFlags, VkMemoryPropertyFlags propFlags,
+		VkDeviceMemory* imageMemory, VkPhysicalDevice& physicalDevice, VkDevice& logicalDevice);
 	static std::vector<Mesh> LoadNode(VkPhysicalDevice newPhysicalDevice, VkDevice newDevice, VkQueue transferQueue, VkCommandPool transferCommandPool,
 		aiNode* node, const aiScene* scene, std::vector<int> matToTex);
 	static Mesh LoadMesh(VkPhysicalDevice newPhysicalDevice, VkDevice newDevice, VkQueue transferQueue, VkCommandPool transferCommandPool,

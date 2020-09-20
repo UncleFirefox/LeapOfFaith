@@ -12,8 +12,6 @@
 #include <algorithm>
 #include <array>
 
-#include <stb_image.h>
-
 #include "Mesh.h"
 #include "MeshModel.h"
 #include "Utilities.h"
@@ -168,16 +166,10 @@ private:
 	VkFormat chooseSupportedFormat(const std::vector<VkFormat>& formats, VkImageTiling tiling, VkFormatFeatureFlags featureFlags);
 
 	// Helper Create functions
-	VkImage createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usageFlags,
-		VkMemoryPropertyFlags propFlags, VkDeviceMemory* imageMemory);
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 
-	int createTextureImage(std::string fileName);
 	int createTexture(std::string fileName);
 	int createTextureDescriptor(VkImageView textureImage);
-
-	// Loader functions
-	stbi_uc* loadTextureFile(std::string fileName, int* width, int* height, VkDeviceSize* imageSize);
 };
 
