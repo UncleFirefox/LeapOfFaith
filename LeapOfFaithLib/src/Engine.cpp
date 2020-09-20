@@ -1,9 +1,9 @@
-#define STB_IMAGE_IMPLEMENTATION
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include "Engine.h"
 #include "VulkanRenderer.h"
 #include "nlohmann/json.hpp"
+#include "Globals.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -20,6 +20,9 @@ int Engine::start()
 
 	// Create Window
 	initWindow("Leap Of Faith", config["width"], config["height"]);
+
+	// Initialize global variablers
+	initGlobals();
 
 	// Create renderer instance
 	if (vulkanRenderer.init(window) == EXIT_FAILURE)
@@ -67,4 +70,18 @@ void Engine::initWindow(std::string wName, const int width, const int height)
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 	window = glfwCreateWindow(width, height, wName.c_str(), nullptr, nullptr);
+}
+
+void Engine::initGlobals()
+{
+	Globals::mainDevice = new Globals::MainDevice();
+	Globals::graphicsQueue = new VkQueue();
+	Globals::graphicsCommandPool = new VkCommandPool();
+	Globals::textureImages = new std::vector<VkImage>();
+	Globals::textureImageViews = new std::vector<VkImageView>();
+	Globals::textureImageMemory = new std::vector<VkDeviceMemory>();
+	Globals::samplerDescriptorPool = new VkDescriptorPool();
+	Globals::samplerSetLayout = new VkDescriptorSetLayout();
+	Globals::textureSampler = new VkSampler();
+	Globals::samplerDescriptorSets = new std::vector<VkDescriptorSet>();
 }

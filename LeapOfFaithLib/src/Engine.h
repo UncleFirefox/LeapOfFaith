@@ -6,5 +6,6 @@ public:
 	static int start();
 private:
 	static void initWindow(std::string wName, const int width, const int height);
+	static void initGlobals();
 };
 
