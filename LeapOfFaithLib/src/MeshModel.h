@@ -21,10 +21,10 @@ public:
 		std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
 		VkDescriptorPool& samplerDescriptorPool, VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets);
 
-	size_t getMeshCount();
+	inline size_t getMeshCount() const { return meshList.size(); }
 	Mesh* getMesh(size_t index);
 
-	glm::mat4 getModel();
+	inline glm::mat4 getModel() const { return model; }
 	void setModel(glm::mat4 newModel);
 
 	void destroyMeshModel();

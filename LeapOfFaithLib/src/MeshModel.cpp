@@ -148,11 +148,6 @@ int MeshModel::createTextureDescriptor(VkImageView textureImage, VkDescriptorPoo
 	return samplerDescriptorSets.size() - 1;
 }
 
-size_t MeshModel::getMeshCount()
-{
-	return meshList.size();
-}
-
 Mesh* MeshModel::getMesh(size_t index)
 {
 	if (index >= meshList.size())
@@ -161,11 +156,6 @@ Mesh* MeshModel::getMesh(size_t index)
 	}
 
 	return &meshList[index];
-}
-
-glm::mat4 MeshModel::getModel()
-{
-	return model;
 }
 
 void MeshModel::setModel(glm::mat4 newModel)

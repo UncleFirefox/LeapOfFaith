@@ -25,32 +25,12 @@ void Mesh::setModel(glm::mat4 newModel)
 	model.model = newModel;
 }
 
-Model Mesh::getModel()
-{
-	return model;
-}
-
-int Mesh::getTexId()
-{
-	return texId;
-}
-
-int Mesh::getVertexCount()
-{
-	return vertexCount;
-}
-
-VkBuffer Mesh::getVertexBuffer()
+VkBuffer Mesh::getVertexBuffer() const
 {
 	return vertexBuffer;
 }
 
-int Mesh::getIndexCount()
-{
-	return indexCount;
-}
-
-VkBuffer Mesh::getIndexBuffer()
+VkBuffer Mesh::getIndexBuffer() const
 {
 	return indexBuffer;
 }
@@ -61,10 +41,6 @@ void Mesh::destroyBuffers()
 	vkFreeMemory(device, vertexBufferMemory, nullptr);
 	vkDestroyBuffer(device, indexBuffer, nullptr);
 	vkFreeMemory(device, indexBufferMemory, nullptr);
-}
-
-Mesh::~Mesh()
-{
 }
 
 void Mesh::createVertexBuffer(VkQueue transferQueue, VkCommandPool transferCommandPool, std::vector<Vertex>* vertices)
