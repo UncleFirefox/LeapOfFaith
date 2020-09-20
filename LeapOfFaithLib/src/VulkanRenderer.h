@@ -166,10 +166,6 @@ private:
 	VkFormat chooseSupportedFormat(const std::vector<VkFormat>& formats, VkImageTiling tiling, VkFormatFeatureFlags featureFlags);
 
 	// Helper Create functions
-	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 	VkShaderModule createShaderModule(const std::vector<char>& code);
-
-	int createTexture(std::string fileName);
-	int createTextureDescriptor(VkImageView textureImage);
 };
 

@@ -31,7 +31,8 @@ int VulkanRenderer::init(GLFWwindow* newWindow)
 		uboViewProjection.projection[1][1] *= -1;
 
 		// Create our default "no texture" texture
-		createTexture("plain.png");
+		MeshModel::createTexture("plain.png", mainDevice.physicalDevice, mainDevice.logicalDevice, graphicsQueue, graphicsCommandPool, 
+			textureImages, textureImageMemory, textureImageViews, samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
 	}
 	catch (const std::runtime_error& e)
 	{
@@ -377,7 +378,7 @@ void VulkanRenderer::createSwapChain()
 		// Store image handle
 		SwapchainImage swapChainImage = {};
 		swapChainImage.image = image;
-		swapChainImage.imageView = createImageView(image, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+		swapChainImage.imageView = MeshModel::createImageView(image, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, mainDevice.logicalDevice);
 
 		// Add to swapchain image list
 		swapChainImages.push_back(swapChainImage);
@@ -771,7 +772,7 @@ void VulkanRenderer::createDepthBufferImage()
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthBufferImageMemory, mainDevice.physicalDevice, mainDevice.logicalDevice);
 
 	// Create depth buffer image view
-	depthBufferImageView = createImageView(depthBufferImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+	depthBufferImageView = MeshModel::createImageView(depthBufferImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, mainDevice.logicalDevice);
 }
 
 void VulkanRenderer::createFramebuffers()
@@ -1477,36 +1478,6 @@ VkFormat VulkanRenderer::chooseSupportedFormat(const std::vector<VkFormat>& form
 	throw std::runtime_error("Failed to find a matching format!");
 }
 
-VkImageView VulkanRenderer::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
-{
-	VkImageViewCreateInfo viewCreateInfo = {};
-	viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	viewCreateInfo.image = image; // Image to create view for
-	viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D; // Type of image (1D, 2d, 3D, Cube, etc)
-	viewCreateInfo.format = format; // Format of image data
-	viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY; // Allows remmapping of rgba components to other rgba values
-	viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-	viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-	viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-	// Subresources allow the view to view only a part of an image
-	viewCreateInfo.subresourceRange.aspectMask = aspectFlags; // which aspect of the image to view, (COLOR_BIT etc)
-	viewCreateInfo.subresourceRange.baseMipLevel = 0; // start mipmap level to view from
-	viewCreateInfo.subresourceRange.levelCount = 1; // Number of mipmap levels to view
-	viewCreateInfo.subresourceRange.baseArrayLayer = 0; // Start array level to view from
-	viewCreateInfo.subresourceRange.levelCount = 1; // Number of array levels to view
-
-	// Create image view and return it
-	VkImageView imageView;
-	VkResult result = vkCreateImageView(mainDevice.logicalDevice, &viewCreateInfo, nullptr, &imageView);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create an Image View!");
-	}
-
-	return imageView;
-}
-
 VkShaderModule VulkanRenderer::createShaderModule(const std::vector<char>& code)
 {
 	// Shader Module create information
@@ -1525,74 +1496,15 @@ VkShaderModule VulkanRenderer::createShaderModule(const std::vector<char>& code)
 	return shaderModule;
 }
 
-int VulkanRenderer::createTexture(std::string fileName)
-{
-	// Create Texture Image and get its location in array
-	int textureImageLoc = MeshModel::createTextureImage(fileName, mainDevice.physicalDevice, mainDevice.logicalDevice, graphicsQueue, graphicsCommandPool, textureImages, textureImageMemory);
-
-	// Create image view and add to list
-	VkImageView imageView = createImageView(textureImages[textureImageLoc], VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
-	textureImageViews.push_back(imageView);
-
-	// Create texture descriptor
-	int descriptorLoc = createTextureDescriptor(imageView);
-
-	// Return location of set with texture
-	return descriptorLoc;
-}
-
-int VulkanRenderer::createTextureDescriptor(VkImageView textureImage)
-{
-	VkDescriptorSet descriptorSet;
-
-	// Descriptor set allocation info
-	VkDescriptorSetAllocateInfo setAllocInfo = {};
-	setAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	setAllocInfo.descriptorPool = samplerDescriptorPool;
-	setAllocInfo.descriptorSetCount = 1;
-	setAllocInfo.pSetLayouts = &samplerSetLayout;
-
-	// Allocate Descriptor Sets
-	VkResult result = vkAllocateDescriptorSets(mainDevice.logicalDevice, &setAllocInfo, &descriptorSet);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to allocate Texture Descriptor Sets!");
-	}
-
-	// Texture Image info
-	VkDescriptorImageInfo imageInfo = {};
-	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; //Image layout when in use
-	imageInfo.imageView = textureImage; // Image to bind to set
-	imageInfo.sampler = textureSampler; // Sampler to use for set
-
-	// Descriptor write info
-	VkWriteDescriptorSet descriptorWrite = {};
-	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite.dstSet = descriptorSet;
-	descriptorWrite.dstBinding = 0;
-	descriptorWrite.dstArrayElement = 0;
-	descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorWrite.descriptorCount = 1;
-	descriptorWrite.pImageInfo = &imageInfo;
-
-	// Update new descriptor set
-	vkUpdateDescriptorSets(mainDevice.logicalDevice, 1, &descriptorWrite, 0, nullptr);
-
-	// Add descriptor set to list
-	samplerDescriptorSets.push_back(descriptorSet);
-
-	// Return descriptor set location
-	return samplerDescriptorSets.size() - 1;
-}
-
 int VulkanRenderer::createMeshModel(std::string modelFile)
 {
 	// Create mesh model and add to list
 	MeshModel meshModel;
 	meshModel.LoadFile(
 		modelFile, 
-		[&](std::string fileName) -> int {return createTexture(fileName); }, 
-		mainDevice.physicalDevice, mainDevice.logicalDevice, graphicsQueue, graphicsCommandPool
+		mainDevice.physicalDevice, mainDevice.logicalDevice, graphicsQueue, graphicsCommandPool,
+		textureImages, textureImageMemory, textureImageViews, 
+		samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets
 	);
 	modelList.push_back(meshModel);
 

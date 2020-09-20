@@ -14,8 +14,9 @@ MeshModel::MeshModel()
 	model = glm::mat4(1.0f);
 }
 
-void MeshModel::LoadFile(const std::string& modelFile, std::function<int(std::string)> createTextureFunc, 
-	VkPhysicalDevice& physicalDevice, VkDevice& logicalDevice, VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool)
+void MeshModel::LoadFile(const std::string& modelFile, VkPhysicalDevice& physicalDevice, VkDevice& logicalDevice, VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool,
+	std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
+	VkDescriptorPool& samplerDescriptorPool, VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets)
 {
 	// Import model "scene"
 	Assimp::Importer importer;
@@ -42,7 +43,8 @@ void MeshModel::LoadFile(const std::string& modelFile, std::function<int(std::st
 		else
 		{
 			// Otherwise, create texture and set value to index of new texture
-			matToTex[i] = createTextureFunc(textureNames[i]);
+			matToTex[i] = createTexture(textureNames[i], physicalDevice, logicalDevice, graphicsQueue, graphicsCommandPool, 
+				textureImages,textureImageMemory, textureImageViews, samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
 		}
 	}
 
@@ -51,6 +53,99 @@ void MeshModel::LoadFile(const std::string& modelFile, std::function<int(std::st
 		scene->mRootNode, scene, matToTex);
 
 	this->meshList = modelMeshes;
+}
+
+int MeshModel::createTexture(std::string fileName, VkPhysicalDevice& physicalDevice, VkDevice& logicalDevice, VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool,
+	std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews, 
+	VkDescriptorPool& samplerDescriptorPool, VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets)
+{
+	// Create Texture Image and get its location in array
+	int textureImageLoc = MeshModel::createTextureImage(fileName, physicalDevice, logicalDevice, graphicsQueue, graphicsCommandPool, textureImages, textureImageMemory);
+
+	// Create image view and add to list
+	VkImageView imageView = createImageView(textureImages[textureImageLoc], VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, logicalDevice);
+	textureImageViews.push_back(imageView);
+
+	// Create texture descriptor
+	int descriptorLoc = createTextureDescriptor(imageView, samplerDescriptorPool, logicalDevice, samplerSetLayout, textureSampler, samplerDescriptorSets);
+
+	// Return location of set with texture
+	return descriptorLoc;
+}
+
+VkImageView MeshModel::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkDevice& logicalDevice)
+{
+	VkImageViewCreateInfo viewCreateInfo = {};
+	viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewCreateInfo.image = image; // Image to create view for
+	viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D; // Type of image (1D, 2d, 3D, Cube, etc)
+	viewCreateInfo.format = format; // Format of image data
+	viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY; // Allows remmapping of rgba components to other rgba values
+	viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+	// Subresources allow the view to view only a part of an image
+	viewCreateInfo.subresourceRange.aspectMask = aspectFlags; // which aspect of the image to view, (COLOR_BIT etc)
+	viewCreateInfo.subresourceRange.baseMipLevel = 0; // start mipmap level to view from
+	viewCreateInfo.subresourceRange.levelCount = 1; // Number of mipmap levels to view
+	viewCreateInfo.subresourceRange.baseArrayLayer = 0; // Start array level to view from
+	viewCreateInfo.subresourceRange.levelCount = 1; // Number of array levels to view
+
+	// Create image view and return it
+	VkImageView imageView;
+	VkResult result = vkCreateImageView(logicalDevice, &viewCreateInfo, nullptr, &imageView);
+	if (result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create an Image View!");
+	}
+
+	return imageView;
+}
+
+int MeshModel::createTextureDescriptor(VkImageView textureImage, VkDescriptorPool& samplerDescriptorPool, VkDevice& logicalDevice, 
+	VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets)
+{
+	VkDescriptorSet descriptorSet;
+
+	// Descriptor set allocation info
+	VkDescriptorSetAllocateInfo setAllocInfo = {};
+	setAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	setAllocInfo.descriptorPool = samplerDescriptorPool;
+	setAllocInfo.descriptorSetCount = 1;
+	setAllocInfo.pSetLayouts = &samplerSetLayout;
+
+	// Allocate Descriptor Sets
+	VkResult result = vkAllocateDescriptorSets(logicalDevice, &setAllocInfo, &descriptorSet);
+	if (result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to allocate Texture Descriptor Sets!");
+	}
+
+	// Texture Image info
+	VkDescriptorImageInfo imageInfo = {};
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; //Image layout when in use
+	imageInfo.imageView = textureImage; // Image to bind to set
+	imageInfo.sampler = textureSampler; // Sampler to use for set
+
+	// Descriptor write info
+	VkWriteDescriptorSet descriptorWrite = {};
+	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrite.dstSet = descriptorSet;
+	descriptorWrite.dstBinding = 0;
+	descriptorWrite.dstArrayElement = 0;
+	descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	descriptorWrite.descriptorCount = 1;
+	descriptorWrite.pImageInfo = &imageInfo;
+
+	// Update new descriptor set
+	vkUpdateDescriptorSets(logicalDevice, 1, &descriptorWrite, 0, nullptr);
+
+	// Add descriptor set to list
+	samplerDescriptorSets.push_back(descriptorSet);
+
+	// Return descriptor set location
+	return samplerDescriptorSets.size() - 1;
 }
 
 size_t MeshModel::getMeshCount()
@@ -209,7 +304,7 @@ stbi_uc* MeshModel::loadTextureFile(const std::string& fileName, int* width, int
 }
 
 int MeshModel::createTextureImage(const std::string& fileName, VkPhysicalDevice& physicalDevice, VkDevice& logicalDevice, 
-	VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory> textureImageMemory)
+	VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory)
 {
 	// Load image file
 	int width, height;
