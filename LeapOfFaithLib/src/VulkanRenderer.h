@@ -6,17 +6,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
 #include <stdexcept>
 #include <vector>
 #include <set>
 #include <algorithm>
 #include <array>
-
-#include <stb_image.h>
 
 #include "Mesh.h"
 #include "MeshModel.h"
@@ -27,7 +21,7 @@ class VulkanRenderer
 public:
 	int init(GLFWwindow* newWindow);
 
-	int createMeshModel(std::string modelFile);
+	int createMeshModel(const std::string& modelFile);
 	void updateModel(int modelId, glm::mat4 newModel);
 
 	void draw();
@@ -172,16 +166,6 @@ private:
 	VkFormat chooseSupportedFormat(const std::vector<VkFormat>& formats, VkImageTiling tiling, VkFormatFeatureFlags featureFlags);
 
 	// Helper Create functions
-	VkImage createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usageFlags,
-		VkMemoryPropertyFlags propFlags, VkDeviceMemory* imageMemory);
-	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 	VkShaderModule createShaderModule(const std::vector<char>& code);
-
-	int createTextureImage(std::string fileName);
-	int createTexture(std::string fileName);
-	int createTextureDescriptor(VkImageView textureImage);
-
-	// Loader functions
-	stbi_uc* loadTextureFile(std::string fileName, int* width, int* height, VkDeviceSize* imageSize);
 };
 

@@ -1,4 +1,3 @@
-#define STB_IMAGE_IMPLEMENTATION
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include "Engine.h"
@@ -57,7 +56,7 @@ int Engine::start()
 	glfwTerminate();
 }
 
-void Engine::initWindow(std::string wName, const int width, const int height)
+void Engine::initWindow(const std::string& wName, const int width, const int height)
 {
 	// Initialize GLFW
 	glfwInit();

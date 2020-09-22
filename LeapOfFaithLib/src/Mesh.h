@@ -21,19 +21,17 @@ public:
 		int newTexId);
 
 	void setModel(glm::mat4 newModel);
-	Model getModel();
+	inline Model getModel() const { return model; }
 
-	int getTexId();
+	inline int getTexId() const { return texId; }
 
-	int getVertexCount();
-	VkBuffer getVertexBuffer();
+	inline int getVertexCount() const { return vertexCount; }
+	VkBuffer getVertexBuffer() const;
 
-	int getIndexCount();
-	VkBuffer getIndexBuffer();
+	inline int getIndexCount() const { return indexCount; }
+	VkBuffer getIndexBuffer() const;
 	
 	void destroyBuffers();
-
-	~Mesh();
 private:
 	Model model;
 	int texId;
