@@ -56,7 +56,7 @@ int Engine::start()
 	glfwTerminate();
 }
 
-void Engine::initWindow(std::string wName, const int width, const int height)
+void Engine::initWindow(const std::string& wName, const int width, const int height)
 {
 	// Initialize GLFW
 	glfwInit();

@@ -21,7 +21,7 @@ class VulkanRenderer
 public:
 	int init(GLFWwindow* newWindow);
 
-	int createMeshModel(std::string modelFile);
+	int createMeshModel(const std::string& modelFile);
 	void updateModel(int modelId, glm::mat4 newModel);
 
 	void draw();
