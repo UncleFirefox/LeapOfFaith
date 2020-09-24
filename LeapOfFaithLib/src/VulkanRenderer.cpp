@@ -1,4 +1,5 @@
 #include "VulkanRenderer.h"
+#include "TextureUtils.h"
 
 int VulkanRenderer::init(GLFWwindow* newWindow)
 {
@@ -31,7 +32,7 @@ int VulkanRenderer::init(GLFWwindow* newWindow)
 		uboViewProjection.projection[1][1] *= -1;
 
 		// Create our default "no texture" texture
-		MeshModel::createTexture("plain.png", mainDevice.physicalDevice, mainDevice.logicalDevice, graphicsQueue, graphicsCommandPool, 
+		TextureUtils::createTexture("plain.png", mainDevice.physicalDevice, mainDevice.logicalDevice, graphicsQueue, graphicsCommandPool, 
 			textureImages, textureImageMemory, textureImageViews, samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
 	}
 	catch (const std::runtime_error& e)
@@ -378,7 +379,7 @@ void VulkanRenderer::createSwapChain()
 		// Store image handle
 		SwapchainImage swapChainImage = {};
 		swapChainImage.image = image;
-		swapChainImage.imageView = MeshModel::createImageView(image, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, mainDevice.logicalDevice);
+		swapChainImage.imageView = TextureUtils::createImageView(image, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, mainDevice.logicalDevice);
 
 		// Add to swapchain image list
 		swapChainImages.push_back(swapChainImage);
@@ -768,11 +769,11 @@ void VulkanRenderer::createDepthBufferImage()
 	);
 
 	// Create depth buffer image
-	depthBufferImage = MeshModel::createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
+	depthBufferImage = TextureUtils::createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthBufferImageMemory, mainDevice.physicalDevice, mainDevice.logicalDevice);
 
 	// Create depth buffer image view
-	depthBufferImageView = MeshModel::createImageView(depthBufferImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, mainDevice.logicalDevice);
+	depthBufferImageView = TextureUtils::createImageView(depthBufferImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, mainDevice.logicalDevice);
 }
 
 void VulkanRenderer::createFramebuffers()

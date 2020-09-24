@@ -98,12 +98,16 @@ xcopy /y /i $(SolutionDir)models $(OutDir)models</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\MeshCompiler.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LeapOfFaithLib\LeapOfFaithLib.vcxproj">
       <Project>{16c373f9-d5a4-420b-a94a-e4cb42c56039}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\MeshCompiler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
