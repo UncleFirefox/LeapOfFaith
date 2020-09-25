@@ -145,7 +145,7 @@ private:
 
 	// Validation section added by the community at Udemy
 	// MARCO: What do you think?
-#ifdef VK_DEBUG
+#ifdef _DEBUG
 	const bool enableValidationLayers = true;
 #else
 	const bool enableValidationLayers = false;
