@@ -7,18 +7,13 @@
 
 #include <glm/glm.hpp>
 
+#include "DataStructures.h"
+
 const int MAX_FRAME_DRAWS = 2;
 const int MAX_OBJECTS = 20;
 
 const std::vector<const char*> deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
-// Vertex data representation
-struct Vertex {
-	glm::vec3 pos; // Vertex position (x,y,z)
-	glm::vec3 col; // Vertex Color (r,g,b)
-	glm::vec2 tex; // Texture coords (u,v)
 };
 
 // Indices (locations) of Queue Families (if they exist at all)

@@ -9,6 +9,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{C01347
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LeapOfFaithLib", "LeapOfFaithLib\LeapOfFaithLib.vcxproj", "{16C373F9-D5A4-420B-A94A-E4CB42C56039}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{6A2DBC97-C0D4-443F-A7E7-0FFA0157C7FD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ResourceCompiler", "ResourceCompiler\ResourceCompiler.vcxproj", "{E37CBC07-3AA2-4D3A-B985-D4970B5480BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -23,6 +27,10 @@ Global
 		{16C373F9-D5A4-420B-A94A-E4CB42C56039}.Debug|x64.Build.0 = Debug|x64
 		{16C373F9-D5A4-420B-A94A-E4CB42C56039}.Release|x64.ActiveCfg = Release|x64
 		{16C373F9-D5A4-420B-A94A-E4CB42C56039}.Release|x64.Build.0 = Release|x64
+		{E37CBC07-3AA2-4D3A-B985-D4970B5480BD}.Debug|x64.ActiveCfg = Debug|x64
+		{E37CBC07-3AA2-4D3A-B985-D4970B5480BD}.Debug|x64.Build.0 = Debug|x64
+		{E37CBC07-3AA2-4D3A-B985-D4970B5480BD}.Release|x64.ActiveCfg = Release|x64
+		{E37CBC07-3AA2-4D3A-B985-D4970B5480BD}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -30,6 +38,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0639755C-9254-4F73-AD98-374592FB68C5} = {C01347FB-C88D-4011-895F-150C23E1573E}
 		{16C373F9-D5A4-420B-A94A-E4CB42C56039} = {C01347FB-C88D-4011-895F-150C23E1573E}
+		{E37CBC07-3AA2-4D3A-B985-D4970B5480BD} = {6A2DBC97-C0D4-443F-A7E7-0FFA0157C7FD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2E261555-47C5-45C0-8BF3-C04226810044}

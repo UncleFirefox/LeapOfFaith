@@ -1,9 +1,5 @@
 #include "Mesh.h"
 
-Mesh::Mesh()
-{
-}
-
 Mesh::Mesh(VkPhysicalDevice newPhysicalDevice, VkDevice newDevice,
 	VkQueue transferQueue, VkCommandPool transferCommandPool,
 	std::vector<Vertex>* vertices, std::vector<uint32_t>* indices,
