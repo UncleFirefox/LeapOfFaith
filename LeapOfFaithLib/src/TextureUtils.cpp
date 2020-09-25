@@ -90,7 +90,7 @@ VkImageView TextureUtils::createImageView(VkImage image, VkFormat format, VkImag
 	viewCreateInfo.subresourceRange.baseMipLevel = 0; // start mipmap level to view from
 	viewCreateInfo.subresourceRange.levelCount = 1; // Number of mipmap levels to view
 	viewCreateInfo.subresourceRange.baseArrayLayer = 0; // Start array level to view from
-	viewCreateInfo.subresourceRange.levelCount = 1; // Number of array levels to view
+	viewCreateInfo.subresourceRange.layerCount = 1; // Number of array levels to view
 
 	// Create image view and return it
 	VkImageView imageView;

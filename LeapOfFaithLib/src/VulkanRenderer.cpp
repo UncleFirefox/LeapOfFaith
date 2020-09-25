@@ -527,7 +527,7 @@ void VulkanRenderer::createDescriptorSetLayout()
 
 	// Create a descriptor set layout with given binding for texture
 	VkDescriptorSetLayoutCreateInfo textureLayoutCreateInfo = {};
-	textureLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	textureLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	textureLayoutCreateInfo.bindingCount = 1;
 	textureLayoutCreateInfo.pBindings = &samplerLayoutBinding;
 
@@ -537,8 +537,6 @@ void VulkanRenderer::createDescriptorSetLayout()
 	{
 		throw std::runtime_error("Failed to create a Descriptor Set Layout!");
 	}
-
-
 }
 
 void VulkanRenderer::createPushConstantRange()
@@ -636,7 +634,7 @@ void VulkanRenderer::createGraphicsPipeline()
 	scissor.extent = swapChainExtent; // extent to describe region to use, starting at offset
 
 	VkPipelineViewportStateCreateInfo viewPortStateCreateInfo = {};
-	viewPortStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	viewPortStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewPortStateCreateInfo.viewportCount = 1;
 	viewPortStateCreateInfo.pViewports = &viewport;
 	viewPortStateCreateInfo.scissorCount = 1;
@@ -722,8 +720,6 @@ void VulkanRenderer::createGraphicsPipeline()
 	depthStencilCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS; // Comparison operation that allows an overwrite (is in front)
 	depthStencilCreateInfo.depthBoundsTestEnable = VK_FALSE; // Depth bounds test: does the depth value exist between two bounds
 	depthStencilCreateInfo.stencilTestEnable = VK_FALSE; // Enable stencil test
-
-
 
 	// Graphics pipeline creation
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
