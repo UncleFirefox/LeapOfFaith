@@ -5,8 +5,6 @@
 #include "nlohmann/json.hpp"
 #include "Globals.h"
 
-#include <iostream>
-#include <stdexcept>
 #include <vector>
 
 GLFWwindow* window;

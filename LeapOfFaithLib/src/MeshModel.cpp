@@ -1,7 +1,6 @@
 #include "MeshModel.h"
 #include "MeshReader.h"
 #include "TextureUtils.h"
-#include "Globals.h"
 
 MeshModel::MeshModel()
 {

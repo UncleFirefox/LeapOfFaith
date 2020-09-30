@@ -1,3 +1,6 @@
+#include <array>
+#include <set>
+
 #include "Globals.h"
 #include "VulkanRenderer.h"
 #include "TextureUtils.h"

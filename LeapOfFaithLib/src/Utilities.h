@@ -5,8 +5,6 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <glm/glm.hpp>
-
 #include "DataStructures.h"
 
 const int MAX_FRAME_DRAWS = 2;

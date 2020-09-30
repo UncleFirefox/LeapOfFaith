@@ -6,13 +6,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <stdexcept>
 #include <vector>
-#include <set>
-#include <algorithm>
-#include <array>
 
-#include "Mesh.h"
 #include "MeshModel.h"
 #include "Utilities.h"
 
