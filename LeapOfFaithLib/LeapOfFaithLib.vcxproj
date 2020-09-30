@@ -106,6 +106,7 @@
   <ItemGroup>
     <ClInclude Include="src\DataStructures.h" />
     <ClInclude Include="src\Engine.h" />
+    <ClInclude Include="src\Globals.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\MeshModel.h" />
     <ClInclude Include="src\MeshReader.h" />
@@ -115,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\Globals.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshModel.cpp" />
     <ClCompile Include="src\MeshReader.cpp" />

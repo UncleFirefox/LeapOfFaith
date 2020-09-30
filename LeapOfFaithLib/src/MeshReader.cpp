@@ -1,11 +1,13 @@
 #include "MeshReader.h"
+
+#include "Globals.h"
 #include "TextureUtils.h"
 
 #include <fstream>
 #include <string>
 
-void MeshReader::loadFromBinary(const std::string& inputFile, std::vector<Mesh>& meshList,
-	VkPhysicalDevice& physicalDevice, VkDevice& logicalDevice, VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool,
+void MeshReader::loadFromBinary(const std::string& inputFile, std::vector<Mesh>& meshList, 
+	VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool,
 	std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
 	VkDescriptorPool& samplerDescriptorPool, VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets)
 {
@@ -38,7 +40,7 @@ void MeshReader::loadFromBinary(const std::string& inputFile, std::vector<Mesh>&
 		else
 		{
 			// Otherwise, create texture and set value to index of new texture
-			matToTex[i] = TextureUtils::createTexture(textureNames[i], physicalDevice, logicalDevice, graphicsQueue, graphicsCommandPool, 
+			matToTex[i] = TextureUtils::createTexture(textureNames[i], graphicsQueue, graphicsCommandPool, 
 				textureImages,textureImageMemory, textureImageViews, samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
 		}
 	}
@@ -77,7 +79,7 @@ void MeshReader::loadFromBinary(const std::string& inputFile, std::vector<Mesh>&
 
 		file.read((char*)&materialIndex, sizeof(unsigned int));
 
-		meshList.push_back(Mesh(physicalDevice, logicalDevice, graphicsQueue, graphicsCommandPool, &vertices, &indices, matToTex[materialIndex]));
+		meshList.push_back(Mesh(Globals::vkContext->physicalDevice, Globals::vkContext->logicalDevice, graphicsQueue, graphicsCommandPool, &vertices, &indices, matToTex[materialIndex]));
 	}
 
 	file.close();

@@ -10,7 +10,7 @@ class MeshModel
 {
 public:
 	MeshModel();
-	void LoadFile(const std::string& modelFile, VkPhysicalDevice& physicalDevice, VkDevice& logicalDevice, VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool,
+	void LoadFile(const std::string& modelFile, VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool,
 		std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
 		VkDescriptorPool& samplerDescriptorPool, VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets);
 

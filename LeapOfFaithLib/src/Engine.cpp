@@ -3,6 +3,7 @@
 #include "Engine.h"
 #include "VulkanRenderer.h"
 #include "nlohmann/json.hpp"
+#include "Globals.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -19,6 +20,9 @@ int Engine::start()
 
 	// Create Window
 	initWindow("Leap Of Faith", config["width"], config["height"]);
+
+	// Initialize global variablers
+	initGlobals();
 
 	// Create renderer instance
 	if (vulkanRenderer.init(window) == EXIT_FAILURE)
@@ -66,4 +70,9 @@ void Engine::initWindow(const std::string& wName, const int width, const int hei
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 	window = glfwCreateWindow(width, height, wName.c_str(), nullptr, nullptr);
+}
+
+void Engine::initGlobals()
+{
+	Globals::vkContext = new Globals::VkContext();
 }

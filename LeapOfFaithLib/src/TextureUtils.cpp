@@ -1,22 +1,23 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "Globals.h"
 #include "TextureUtils.h"
 #include "Utilities.h"
 
-int TextureUtils::createTexture(const std::string& fileName, VkPhysicalDevice& physicalDevice, VkDevice& logicalDevice, VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool,
+int TextureUtils::createTexture(const std::string& fileName, VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool,
 	std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
 	VkDescriptorPool& samplerDescriptorPool, VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets)
 {
 	// Create Texture Image and get its location in array
-	int textureImageLoc = createTextureImage(fileName, physicalDevice, logicalDevice, graphicsQueue, graphicsCommandPool, textureImages, textureImageMemory);
+	int textureImageLoc = createTextureImage(fileName, graphicsQueue, graphicsCommandPool, textureImages, textureImageMemory);
 
 	// Create image view and add to list
-	VkImageView imageView = createImageView(textureImages[textureImageLoc], VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, logicalDevice);
+	VkImageView imageView = createImageView(textureImages[textureImageLoc], VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	textureImageViews.push_back(imageView);
 
 	// Create texture descriptor
-	int descriptorLoc = createTextureDescriptor(imageView, samplerDescriptorPool, logicalDevice, samplerSetLayout, textureSampler, samplerDescriptorSets);
+	int descriptorLoc = createTextureDescriptor(imageView, samplerDescriptorPool, Globals::vkContext->logicalDevice, samplerSetLayout, textureSampler, samplerDescriptorSets);
 
 	// Return location of set with texture
 	return descriptorLoc;
@@ -24,7 +25,7 @@ int TextureUtils::createTexture(const std::string& fileName, VkPhysicalDevice& p
 
 VkImage TextureUtils::createImage(uint32_t width, uint32_t height, VkFormat format,
 	VkImageTiling tiling, VkImageUsageFlags usageFlags, VkMemoryPropertyFlags propFlags,
-	VkDeviceMemory* imageMemory, VkPhysicalDevice& physicalDevice, VkDevice& logicalDevice)
+	VkDeviceMemory* imageMemory)
 {
 	// Create image
 	// Image creation info
@@ -44,7 +45,7 @@ VkImage TextureUtils::createImage(uint32_t width, uint32_t height, VkFormat form
 	imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Whether image can be shared between queues
 
 	VkImage image;
-	VkResult result = vkCreateImage(logicalDevice, &imageCreateInfo, nullptr, &image);
+	VkResult result = vkCreateImage(Globals::vkContext->logicalDevice, &imageCreateInfo, nullptr, &image);
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create an Image!");
@@ -53,27 +54,27 @@ VkImage TextureUtils::createImage(uint32_t width, uint32_t height, VkFormat form
 	// Create memory for image
 	// Get memory requirements for type of image
 	VkMemoryRequirements memoryRequirements;
-	vkGetImageMemoryRequirements(logicalDevice, image, &memoryRequirements);
+	vkGetImageMemoryRequirements(Globals::vkContext->logicalDevice, image, &memoryRequirements);
 
 	// Allocate memory using image requirements and user defined properties
 	VkMemoryAllocateInfo memoryAllocInfo = {};
 	memoryAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	memoryAllocInfo.allocationSize = memoryRequirements.size;
-	memoryAllocInfo.memoryTypeIndex = findMemoryTypeIndex(physicalDevice, memoryRequirements.memoryTypeBits, propFlags);
+	memoryAllocInfo.memoryTypeIndex = findMemoryTypeIndex(Globals::vkContext->physicalDevice, memoryRequirements.memoryTypeBits, propFlags);
 
-	result = vkAllocateMemory(logicalDevice, &memoryAllocInfo, nullptr, imageMemory);
+	result = vkAllocateMemory(Globals::vkContext->logicalDevice, &memoryAllocInfo, nullptr, imageMemory);
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to allocate memory for image!");
 	}
 
 	// Connect memory to image
-	vkBindImageMemory(logicalDevice, image, *imageMemory, 0);
+	vkBindImageMemory(Globals::vkContext->logicalDevice, image, *imageMemory, 0);
 
 	return image;
 }
 
-VkImageView TextureUtils::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkDevice& logicalDevice)
+VkImageView TextureUtils::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
 	VkImageViewCreateInfo viewCreateInfo = {};
 	viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -94,7 +95,7 @@ VkImageView TextureUtils::createImageView(VkImage image, VkFormat format, VkImag
 
 	// Create image view and return it
 	VkImageView imageView;
-	VkResult result = vkCreateImageView(logicalDevice, &viewCreateInfo, nullptr, &imageView);
+	VkResult result = vkCreateImageView(Globals::vkContext->logicalDevice, &viewCreateInfo, nullptr, &imageView);
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create an Image View!");
@@ -103,7 +104,7 @@ VkImageView TextureUtils::createImageView(VkImage image, VkFormat format, VkImag
 	return imageView;
 }
 
-int TextureUtils::createTextureImage(const std::string& fileName, VkPhysicalDevice& physicalDevice, VkDevice& logicalDevice,
+int TextureUtils::createTextureImage(const std::string& fileName, 
 	VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory)
 {
 	// Load image file
@@ -114,15 +115,15 @@ int TextureUtils::createTextureImage(const std::string& fileName, VkPhysicalDevi
 	// Create staging buffer to hold loaded data, ready to copy to device
 	VkBuffer imageStagingBuffer;
 	VkDeviceMemory imageStagingBufferMemory;
-	createBuffer(physicalDevice, logicalDevice, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+	createBuffer(Globals::vkContext->physicalDevice, Globals::vkContext->logicalDevice, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		&imageStagingBuffer, &imageStagingBufferMemory);
 
 	// Copy image to staging buffer
 	void* data;
-	vkMapMemory(logicalDevice, imageStagingBufferMemory, 0, imageSize, 0, &data);
+	vkMapMemory(Globals::vkContext->logicalDevice, imageStagingBufferMemory, 0, imageSize, 0, &data);
 	memcpy(data, imageData, static_cast<size_t>(imageSize));
-	vkUnmapMemory(logicalDevice, imageStagingBufferMemory);
+	vkUnmapMemory(Globals::vkContext->logicalDevice, imageStagingBufferMemory);
 
 	// Free original image data
 	stbi_image_free(imageData);
@@ -131,19 +132,19 @@ int TextureUtils::createTextureImage(const std::string& fileName, VkPhysicalDevi
 	VkImage texImage;
 	VkDeviceMemory texImageMemory;
 	texImage = createImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &texImageMemory, physicalDevice, logicalDevice);
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &texImageMemory);
 
 	// Copy data to image
 
 	// Transition image to be DST for copy operation
-	transitionImageLayout(logicalDevice, graphicsQueue, graphicsCommandPool,
+	transitionImageLayout(Globals::vkContext->logicalDevice, graphicsQueue, graphicsCommandPool,
 		texImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 	// Copy image data
-	copyImageBuffer(logicalDevice, graphicsQueue, graphicsCommandPool, imageStagingBuffer, texImage, width, height);
+	copyImageBuffer(Globals::vkContext->logicalDevice, graphicsQueue, graphicsCommandPool, imageStagingBuffer, texImage, width, height);
 
 	// Transition image to be shader readable for shader usage
-	transitionImageLayout(logicalDevice, graphicsQueue, graphicsCommandPool,
+	transitionImageLayout(Globals::vkContext->logicalDevice, graphicsQueue, graphicsCommandPool,
 		texImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	// Add texture data to vector for reference
@@ -151,8 +152,8 @@ int TextureUtils::createTextureImage(const std::string& fileName, VkPhysicalDevi
 	textureImageMemory.push_back(texImageMemory);
 
 	// Destroy staging buffer
-	vkDestroyBuffer(logicalDevice, imageStagingBuffer, nullptr);
-	vkFreeMemory(logicalDevice, imageStagingBufferMemory, nullptr);
+	vkDestroyBuffer(Globals::vkContext->logicalDevice, imageStagingBuffer, nullptr);
+	vkFreeMemory(Globals::vkContext->logicalDevice, imageStagingBufferMemory, nullptr);
 
 	// Return index to the new image
 	return textureImages.size() - 1;

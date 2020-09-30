@@ -43,10 +43,6 @@ private:
 	// Vulkan Components
 	// Main
 	VkInstance instance;
-	struct {
-		VkPhysicalDevice physicalDevice;
-		VkDevice logicalDevice;
-	} mainDevice;
 	VkQueue graphicsQueue;
 	VkQueue presentationQueue;
 	VkSurfaceKHR surface;
