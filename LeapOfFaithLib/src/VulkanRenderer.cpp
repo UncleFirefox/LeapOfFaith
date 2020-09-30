@@ -1,5 +1,7 @@
 #include <array>
 #include <set>
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
 #include "Globals.h"
 #include "VulkanRenderer.h"
