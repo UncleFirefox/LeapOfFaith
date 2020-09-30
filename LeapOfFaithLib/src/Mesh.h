@@ -1,4 +1,5 @@
 #pragma once
+#include <glm/mat4x4.hpp>
 
 struct VkPhysicalDevice_T;
 typedef VkPhysicalDevice_T* VkPhysicalDevice;
