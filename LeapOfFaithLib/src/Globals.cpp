@@ -1,5 +1,5 @@
 #include "Globals.h"
 
 namespace Globals {
-	extern VkContext* vkContext = nullptr;
+	extern VkContext* vkContext = new VkContext{};
 }
