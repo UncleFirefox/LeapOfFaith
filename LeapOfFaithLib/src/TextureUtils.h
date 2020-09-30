@@ -10,7 +10,7 @@ typedef unsigned char stbi_uc;
 class TextureUtils
 {
 public:
-	static int createTexture(const std::string& fileName, VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool,
+	static int createTexture(const std::string& fileName,
 		std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
 		VkDescriptorPool& samplerDescriptorPool, VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets);
 
@@ -20,8 +20,7 @@ public:
 
 	static VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
-	static int createTextureImage(const std::string& fileName,
-		VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory);
+	static int createTextureImage(const std::string& fileName, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory);
 
 	static stbi_uc* loadTextureFile(const std::string& fileName, int* width, int* height, VkDeviceSize* imageSize);
 

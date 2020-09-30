@@ -43,7 +43,6 @@ private:
 	// Vulkan Components
 	// Main
 	VkInstance instance;
-	VkQueue graphicsQueue;
 	VkQueue presentationQueue;
 	VkSurfaceKHR surface;
 	VkSwapchainKHR swapchain;
@@ -88,9 +87,6 @@ private:
 	VkPipeline graphicsPipeline;
 	VkPipelineLayout pipelineLayout;
 	VkRenderPass renderPass;
-
-	// Pools
-	VkCommandPool graphicsCommandPool;
 
 	// Utility
 	VkFormat swapChainImageFormat;

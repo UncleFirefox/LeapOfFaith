@@ -33,8 +33,8 @@ int VulkanRenderer::init(GLFWwindow* newWindow)
 		uboViewProjection.projection[1][1] *= -1;
 
 		// Create our default "no texture" texture
-		TextureUtils::createTexture("plain.png", graphicsQueue, graphicsCommandPool, 
-			textureImages, textureImageMemory, textureImageViews, samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
+		TextureUtils::createTexture("plain.png",textureImages, textureImageMemory, textureImageViews, 
+			samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
 	}
 	catch (const std::runtime_error& e)
 	{
@@ -82,7 +82,7 @@ void VulkanRenderer::draw()
 	submitInfo.pSignalSemaphores = &renderFinished[currentFrame]; // Semaphores to signal when command buffer finishes
 
 	// Submit command buffer to queue
-	VkResult result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, drawFences[currentFrame]);
+	VkResult result = vkQueueSubmit(Globals::vkContext->graphicsQueue, 1, &submitInfo, drawFences[currentFrame]);
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to submit command buffer to queue!");
@@ -151,7 +151,7 @@ void VulkanRenderer::cleanup()
 		vkDestroySemaphore(Globals::vkContext->logicalDevice, imageAvailable[i], nullptr);
 		vkDestroyFence(Globals::vkContext->logicalDevice, drawFences[i], nullptr);
 	}
-	vkDestroyCommandPool(Globals::vkContext->logicalDevice, graphicsCommandPool, nullptr);
+	vkDestroyCommandPool(Globals::vkContext->logicalDevice, Globals::vkContext->graphicsCommandPool, nullptr);
 	for (auto framebuffer : swapChainFramebuffers)
 	{
 		vkDestroyFramebuffer(Globals::vkContext->logicalDevice, framebuffer, nullptr);
@@ -281,7 +281,7 @@ void VulkanRenderer::createLogicalDevice()
 	// Queues are created at the same time as the device...
 	// So we want handle to queues
 	// From given logical device, of given queue family, of given queue index (0 since only one queue) place reference of given VkQueue
-	vkGetDeviceQueue(Globals::vkContext->logicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
+	vkGetDeviceQueue(Globals::vkContext->logicalDevice, indices.graphicsFamily, 0, &Globals::vkContext->graphicsQueue);
 	vkGetDeviceQueue(Globals::vkContext->logicalDevice, indices.presentationFamily, 0, &presentationQueue);
 }
 
@@ -814,7 +814,7 @@ void VulkanRenderer::createCommandPool()
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily; // Queue Family type buffers from this command pool will use
 
 	// Create a Graphics queue family command pool
-	VkResult result = vkCreateCommandPool(Globals::vkContext->logicalDevice, &poolInfo, nullptr, &graphicsCommandPool);
+	VkResult result = vkCreateCommandPool(Globals::vkContext->logicalDevice, &poolInfo, nullptr, &Globals::vkContext->graphicsCommandPool);
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create a Command Pool!");
@@ -828,7 +828,7 @@ void VulkanRenderer::createCommandBuffers()
 
 	VkCommandBufferAllocateInfo cbAllocInfo = {};
 	cbAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cbAllocInfo.commandPool = graphicsCommandPool;
+	cbAllocInfo.commandPool = Globals::vkContext->graphicsCommandPool;
 	cbAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY; // Buffer you submit directly to queue, cant be called by other buffers
 	cbAllocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 
@@ -1499,7 +1499,7 @@ int VulkanRenderer::createMeshModel(const std::string& modelFile)
 	// Create mesh model and add to list
 	MeshModel meshModel;
 	meshModel.LoadFile(
-		modelFile, graphicsQueue, graphicsCommandPool,
+		modelFile,
 		textureImages, textureImageMemory, textureImageViews, 
 		samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets
 	);

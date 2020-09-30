@@ -5,12 +5,11 @@
 #include "TextureUtils.h"
 #include "Utilities.h"
 
-int TextureUtils::createTexture(const std::string& fileName, VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool,
-	std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
+int TextureUtils::createTexture(const std::string& fileName, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
 	VkDescriptorPool& samplerDescriptorPool, VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets)
 {
 	// Create Texture Image and get its location in array
-	int textureImageLoc = createTextureImage(fileName, graphicsQueue, graphicsCommandPool, textureImages, textureImageMemory);
+	int textureImageLoc = createTextureImage(fileName, textureImages, textureImageMemory);
 
 	// Create image view and add to list
 	VkImageView imageView = createImageView(textureImages[textureImageLoc], VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
@@ -104,8 +103,7 @@ VkImageView TextureUtils::createImageView(VkImage image, VkFormat format, VkImag
 	return imageView;
 }
 
-int TextureUtils::createTextureImage(const std::string& fileName, 
-	VkQueue& graphicsQueue, VkCommandPool& graphicsCommandPool, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory)
+int TextureUtils::createTextureImage(const std::string& fileName, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory)
 {
 	// Load image file
 	int width, height;
@@ -137,14 +135,14 @@ int TextureUtils::createTextureImage(const std::string& fileName,
 	// Copy data to image
 
 	// Transition image to be DST for copy operation
-	transitionImageLayout(Globals::vkContext->logicalDevice, graphicsQueue, graphicsCommandPool,
+	transitionImageLayout(Globals::vkContext->logicalDevice, Globals::vkContext->graphicsQueue, Globals::vkContext->graphicsCommandPool,
 		texImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 	// Copy image data
-	copyImageBuffer(Globals::vkContext->logicalDevice, graphicsQueue, graphicsCommandPool, imageStagingBuffer, texImage, width, height);
+	copyImageBuffer(Globals::vkContext->logicalDevice, Globals::vkContext->graphicsQueue, Globals::vkContext->graphicsCommandPool, imageStagingBuffer, texImage, width, height);
 
 	// Transition image to be shader readable for shader usage
-	transitionImageLayout(Globals::vkContext->logicalDevice, graphicsQueue, graphicsCommandPool,
+	transitionImageLayout(Globals::vkContext->logicalDevice, Globals::vkContext->graphicsQueue, Globals::vkContext->graphicsCommandPool,
 		texImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	// Add texture data to vector for reference
