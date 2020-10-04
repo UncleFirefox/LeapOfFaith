@@ -1,7 +1,14 @@
 #pragma once
+#include <glm/mat4x4.hpp>
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+struct VkPhysicalDevice_T;
+typedef VkPhysicalDevice_T* VkPhysicalDevice;
+struct VkDevice_T;
+typedef VkDevice_T* VkDevice;
+struct VkQueue_T;
+typedef VkQueue_T* VkQueue;
+struct VkCommandPool_T;
+typedef VkCommandPool_T* VkCommandPool;
 
 #include <vector>
 

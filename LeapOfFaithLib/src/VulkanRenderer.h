@@ -1,20 +1,13 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <glm/mat4x4.hpp>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <stdexcept>
 #include <vector>
-#include <set>
-#include <algorithm>
-#include <array>
 
-#include "Mesh.h"
 #include "MeshModel.h"
 #include "Utilities.h"
+
+struct GLFWwindow;
 
 class VulkanRenderer
 {
@@ -43,11 +36,6 @@ private:
 	// Vulkan Components
 	// Main
 	VkInstance instance;
-	struct {
-		VkPhysicalDevice physicalDevice;
-		VkDevice logicalDevice;
-	} mainDevice;
-	VkQueue graphicsQueue;
 	VkQueue presentationQueue;
 	VkSurfaceKHR surface;
 	VkSwapchainKHR swapchain;
@@ -92,9 +80,6 @@ private:
 	VkPipeline graphicsPipeline;
 	VkPipelineLayout pipelineLayout;
 	VkRenderPass renderPass;
-
-	// Pools
-	VkCommandPool graphicsCommandPool;
 
 	// Utility
 	VkFormat swapChainImageFormat;

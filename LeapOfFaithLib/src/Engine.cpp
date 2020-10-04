@@ -1,12 +1,11 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
+#include <GLFW/glfw3.h>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "Engine.h"
 #include "VulkanRenderer.h"
 #include "nlohmann/json.hpp"
-
-#include <iostream>
-#include <stdexcept>
-#include <vector>
 
 GLFWwindow* window;
 VulkanRenderer vulkanRenderer;
@@ -56,7 +55,7 @@ int Engine::start()
 	glfwTerminate();
 }
 
-void Engine::initWindow(const std::string& wName, const int width, const int height)
+void Engine::initWindow(const char* wName, const int width, const int height)
 {
 	// Initialize GLFW
 	glfwInit();
@@ -65,5 +64,5 @@ void Engine::initWindow(const std::string& wName, const int width, const int hei
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-	window = glfwCreateWindow(width, height, wName.c_str(), nullptr, nullptr);
+	window = glfwCreateWindow(width, height, wName, nullptr, nullptr);
 }

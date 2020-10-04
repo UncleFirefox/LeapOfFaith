@@ -1,46 +1,48 @@
+#include <array>
+#include <set>
+#include <glm/gtc/matrix_transform.hpp>
+#include <assert.h>
+
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
+#include "Globals.h"
 #include "VulkanRenderer.h"
 #include "TextureUtils.h"
 
 int VulkanRenderer::init(GLFWwindow* newWindow)
 {
 	window = newWindow;
-	try 
-	{
-		createInstance();
-		createSurface();
-		getPhysicalDevice();
-		createLogicalDevice();
-		createSwapChain();
-		createRenderPass();
-		createDescriptorSetLayout();
-		createPushConstantRange();
-		createGraphicsPipeline();
-		createDepthBufferImage();
-		createFramebuffers();
-		createCommandPool();
-		createCommandBuffers();
-		createTextureSampler();
-		//allocateDynamicBufferTransferSpace();
-		createUniformBuffers();
-		createDescriptorPool();
-		createDescriptorSets();
-		createSynchronization();
 
-		uboViewProjection.projection = glm::perspective(glm::radians(45.0f), (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
-		uboViewProjection.view = glm::lookAt(glm::vec3(10.0f, 0.0f, 20.0f), glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	createInstance();
+	createSurface();
+	getPhysicalDevice();
+	createLogicalDevice();
+	createSwapChain();
+	createRenderPass();
+	createDescriptorSetLayout();
+	createPushConstantRange();
+	createGraphicsPipeline();
+	createDepthBufferImage();
+	createFramebuffers();
+	createCommandPool();
+	createCommandBuffers();
+	createTextureSampler();
+	//allocateDynamicBufferTransferSpace();
+	createUniformBuffers();
+	createDescriptorPool();
+	createDescriptorSets();
+	createSynchronization();
 
-		uboViewProjection.projection[1][1] *= -1;
+	uboViewProjection.projection = glm::perspective(glm::radians(45.0f), (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
+	uboViewProjection.view = glm::lookAt(glm::vec3(10.0f, 0.0f, 20.0f), glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-		// Create our default "no texture" texture
-		TextureUtils::createTexture("plain.png", mainDevice.physicalDevice, mainDevice.logicalDevice, graphicsQueue, graphicsCommandPool, 
-			textureImages, textureImageMemory, textureImageViews, samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
-	}
-	catch (const std::runtime_error& e)
-	{
-		printf("ERROR %s\n", e.what());
-		return EXIT_FAILURE;
-	}
+	uboViewProjection.projection[1][1] *= -1;
 
+	// Create our default "no texture" texture
+	TextureUtils::createTexture("plain.png",textureImages, textureImageMemory, textureImageViews, 
+		samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
+	
 	return 0;
 }
 
@@ -54,13 +56,13 @@ void VulkanRenderer::updateModel(int modelId, glm::mat4 newModel)
 void VulkanRenderer::draw()
 {
 	// Wait for given fence to signal open from last draw before continuing
-	vkWaitForFences(mainDevice.logicalDevice, 1, &drawFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+	vkWaitForFences(Globals::vkContext->logicalDevice, 1, &drawFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 	// Manually reset those fences
-	vkResetFences(mainDevice.logicalDevice, 1, &drawFences[currentFrame]);
+	vkResetFences(Globals::vkContext->logicalDevice, 1, &drawFences[currentFrame]);
 
 	// 1) Get the next available image to draw and set something to singal when we're finished with the image (semaphore)
 	uint32_t imageIndex;
-	vkAcquireNextImageKHR(mainDevice.logicalDevice, swapchain, std::numeric_limits<uint64_t>::max(), imageAvailable[currentFrame], VK_NULL_HANDLE, &imageIndex);
+	vkAcquireNextImageKHR(Globals::vkContext->logicalDevice, swapchain, std::numeric_limits<uint64_t>::max(), imageAvailable[currentFrame], VK_NULL_HANDLE, &imageIndex);
 	
 	recordCommands(imageIndex);
 	updateUniformBuffers(imageIndex);
@@ -81,11 +83,8 @@ void VulkanRenderer::draw()
 	submitInfo.pSignalSemaphores = &renderFinished[currentFrame]; // Semaphores to signal when command buffer finishes
 
 	// Submit command buffer to queue
-	VkResult result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, drawFences[currentFrame]);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to submit command buffer to queue!");
-	}
+	VkResult result = vkQueueSubmit(Globals::vkContext->graphicsQueue, 1, &submitInfo, drawFences[currentFrame]);
+	assert(result == VK_SUCCESS && "Failed to submit command buffer to queue!");
 
 	// 3) Present image to screen when it has signalled finished rendering
 	VkPresentInfoKHR presentInfo = {};
@@ -97,10 +96,7 @@ void VulkanRenderer::draw()
 	presentInfo.pImageIndices = &imageIndex; // Index of images in swapchains to present
 
 	result = vkQueuePresentKHR(presentationQueue, &presentInfo);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to present Image");
-	}
+	assert(result == VK_SUCCESS && "Failed to present Image");
 
 	// Get next frame to keep value clamped
 	currentFrame = (currentFrame + 1) % MAX_FRAME_DRAWS;
@@ -110,7 +106,7 @@ void VulkanRenderer::cleanup()
 {
 	// MARCO: Any need for custom deallocators?
 	// Wait until all commands execute before destroying
-	vkDeviceWaitIdle(mainDevice.logicalDevice);
+	vkDeviceWaitIdle(Globals::vkContext->logicalDevice);
 
 	//_aligned_free(modelTransferSpace);
 
@@ -119,60 +115,58 @@ void VulkanRenderer::cleanup()
 		modelList[i].destroyMeshModel();
 	}
 
-	vkDestroyDescriptorPool(mainDevice.logicalDevice, samplerDescriptorPool, nullptr);
-	vkDestroyDescriptorSetLayout(mainDevice.logicalDevice, samplerSetLayout, nullptr);
+	vkDestroyDescriptorPool(Globals::vkContext->logicalDevice, samplerDescriptorPool, nullptr);
+	vkDestroyDescriptorSetLayout(Globals::vkContext->logicalDevice, samplerSetLayout, nullptr);
 
-	vkDestroySampler(mainDevice.logicalDevice, textureSampler, nullptr);
+	vkDestroySampler(Globals::vkContext->logicalDevice, textureSampler, nullptr);
 
 	for (size_t i = 0; i < textureImages.size(); i++)
 	{
-		vkDestroyImageView(mainDevice.logicalDevice, textureImageViews[i], nullptr);
-		vkDestroyImage(mainDevice.logicalDevice, textureImages[i], nullptr);
-		vkFreeMemory(mainDevice.logicalDevice, textureImageMemory[i], nullptr);
+		vkDestroyImageView(Globals::vkContext->logicalDevice, textureImageViews[i], nullptr);
+		vkDestroyImage(Globals::vkContext->logicalDevice, textureImages[i], nullptr);
+		vkFreeMemory(Globals::vkContext->logicalDevice, textureImageMemory[i], nullptr);
 	}
 
-	vkDestroyImageView(mainDevice.logicalDevice, depthBufferImageView, nullptr);
-	vkDestroyImage(mainDevice.logicalDevice, depthBufferImage, nullptr);
-	vkFreeMemory(mainDevice.logicalDevice, depthBufferImageMemory, nullptr);
+	vkDestroyImageView(Globals::vkContext->logicalDevice, depthBufferImageView, nullptr);
+	vkDestroyImage(Globals::vkContext->logicalDevice, depthBufferImage, nullptr);
+	vkFreeMemory(Globals::vkContext->logicalDevice, depthBufferImageMemory, nullptr);
 
-	vkDestroyDescriptorPool(mainDevice.logicalDevice, descriptorPool, nullptr);
-	vkDestroyDescriptorSetLayout(mainDevice.logicalDevice, descriptorSetLayout, nullptr);
+	vkDestroyDescriptorPool(Globals::vkContext->logicalDevice, descriptorPool, nullptr);
+	vkDestroyDescriptorSetLayout(Globals::vkContext->logicalDevice, descriptorSetLayout, nullptr);
 	for (size_t i = 0; i < swapChainImages.size(); i++)
 	{
-		vkDestroyBuffer(mainDevice.logicalDevice, vpUniformBuffer[i], nullptr);
-		vkFreeMemory(mainDevice.logicalDevice, vpUniformBufferMemory[i], nullptr);
-		//vkDestroyBuffer(mainDevice.logicalDevice, modelDUniformBuffer[i], nullptr);
-		//vkFreeMemory(mainDevice.logicalDevice, modelDUniformBufferMemory[i], nullptr);
+		vkDestroyBuffer(Globals::vkContext->logicalDevice, vpUniformBuffer[i], nullptr);
+		vkFreeMemory(Globals::vkContext->logicalDevice, vpUniformBufferMemory[i], nullptr);
+		//vkDestroyBuffer(Globals::mainDevice->logicalDevice, modelDUniformBuffer[i], nullptr);
+		//vkFreeMemory(Globals::mainDevice->logicalDevice, modelDUniformBufferMemory[i], nullptr);
 	}
 	for (size_t i = 0; i < MAX_FRAME_DRAWS; i++)
 	{
-		vkDestroySemaphore(mainDevice.logicalDevice, renderFinished[i], nullptr);
-		vkDestroySemaphore(mainDevice.logicalDevice, imageAvailable[i], nullptr);
-		vkDestroyFence(mainDevice.logicalDevice, drawFences[i], nullptr);
+		vkDestroySemaphore(Globals::vkContext->logicalDevice, renderFinished[i], nullptr);
+		vkDestroySemaphore(Globals::vkContext->logicalDevice, imageAvailable[i], nullptr);
+		vkDestroyFence(Globals::vkContext->logicalDevice, drawFences[i], nullptr);
 	}
-	vkDestroyCommandPool(mainDevice.logicalDevice, graphicsCommandPool, nullptr);
+	vkDestroyCommandPool(Globals::vkContext->logicalDevice, Globals::vkContext->graphicsCommandPool, nullptr);
 	for (auto framebuffer : swapChainFramebuffers)
 	{
-		vkDestroyFramebuffer(mainDevice.logicalDevice, framebuffer, nullptr);
+		vkDestroyFramebuffer(Globals::vkContext->logicalDevice, framebuffer, nullptr);
 	}
-	vkDestroyPipeline(mainDevice.logicalDevice, graphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(mainDevice.logicalDevice, pipelineLayout, nullptr);
-	vkDestroyRenderPass(mainDevice.logicalDevice, renderPass, nullptr);
+	vkDestroyPipeline(Globals::vkContext->logicalDevice, graphicsPipeline, nullptr);
+	vkDestroyPipelineLayout(Globals::vkContext->logicalDevice, pipelineLayout, nullptr);
+	vkDestroyRenderPass(Globals::vkContext->logicalDevice, renderPass, nullptr);
 	for (auto image : swapChainImages)
 	{
-		vkDestroyImageView(mainDevice.logicalDevice, image.imageView, nullptr);
+		vkDestroyImageView(Globals::vkContext->logicalDevice, image.imageView, nullptr);
 	}
-	vkDestroySwapchainKHR(mainDevice.logicalDevice, swapchain, nullptr);
+	vkDestroySwapchainKHR(Globals::vkContext->logicalDevice, swapchain, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
-	vkDestroyDevice(mainDevice.logicalDevice, nullptr);
+	vkDestroyDevice(Globals::vkContext->logicalDevice, nullptr);
 	vkDestroyInstance(instance, nullptr);
 }
 
 void VulkanRenderer::createInstance()
 {
-	if (this->enableValidationLayers && !checkValidationLayerSupport()) {
-		throw std::runtime_error("Validation layers requested, but not available!");
-	}
+	assert(this->enableValidationLayers && checkValidationLayerSupport() && "Validation layers requested, but not available!");
 
 	// Information about the application itself
 	// Most data here doesn't affect the program and is for developer convencience;
@@ -205,10 +199,8 @@ void VulkanRenderer::createInstance()
 	}
 
 	// Check instance extensions supported...
-	if (!checkInstanceExtensionSupport(&instanceExtensions))
-	{
-		throw std::runtime_error("VkInstance does not support required extensions!");
-	}
+	bool extensionsSupported = checkInstanceExtensionSupport(&instanceExtensions);
+	assert(extensionsSupported && "VkInstance does not support required extensions!");
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
 	createInfo.ppEnabledExtensionNames = instanceExtensions.data();
@@ -226,17 +218,13 @@ void VulkanRenderer::createInstance()
 	// Create Instance
 	// MARCO: Second argument is about memory management, what do you think?
 	VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
-
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create a Vulkan Instance");
-	}
+	assert(result == VK_SUCCESS && "Failed to create a Vulkan Instance");
 }
 
 void VulkanRenderer::createLogicalDevice()
 {
 	// Get the queue family indices for the chosen Physical Device
-	QueueFamilyIndices indices = getQueueFamilies(mainDevice.physicalDevice);
+	QueueFamilyIndices indices = getQueueFamilies(Globals::vkContext->physicalDevice);
 
 	// Vector for queue creation information, and set for family indices
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -271,17 +259,14 @@ void VulkanRenderer::createLogicalDevice()
 
 	// MARCO: Any suggestions on allocation
 	// Create the logical device for the given physical device
-	VkResult result = vkCreateDevice(mainDevice.physicalDevice, &deviceCreateInfo, nullptr, &mainDevice.logicalDevice);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create a Logical Device!");
-	}
+	VkResult result = vkCreateDevice(Globals::vkContext->physicalDevice, &deviceCreateInfo, nullptr, &Globals::vkContext->logicalDevice);
+	assert(result == VK_SUCCESS && "Failed to create a Logical Device!");
 
 	// Queues are created at the same time as the device...
 	// So we want handle to queues
 	// From given logical device, of given queue family, of given queue index (0 since only one queue) place reference of given VkQueue
-	vkGetDeviceQueue(mainDevice.logicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
-	vkGetDeviceQueue(mainDevice.logicalDevice, indices.presentationFamily, 0, &presentationQueue);
+	vkGetDeviceQueue(Globals::vkContext->logicalDevice, indices.graphicsFamily, 0, &Globals::vkContext->graphicsQueue);
+	vkGetDeviceQueue(Globals::vkContext->logicalDevice, indices.presentationFamily, 0, &presentationQueue);
 }
 
 void VulkanRenderer::createSurface()
@@ -289,17 +274,13 @@ void VulkanRenderer::createSurface()
 	// MARCO: Allocators for this?
 	// Create surface (creates a surface create info struct, runs the create surface function, returns result)
 	VkResult result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
-
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create a surface!");
-	}
+	assert(result == VK_SUCCESS && "Failed to create a surface!");
 }
 
 void VulkanRenderer::createSwapChain()
 {
 	// Get Swap Chain details so we can pick best settings
-	SwapChainDetails swapChainDetails = getSwapChainDetails(mainDevice.physicalDevice);
+	SwapChainDetails swapChainDetails = getSwapChainDetails(Globals::vkContext->physicalDevice);
 
 	// Find optimal surface values for our swap chain
 	VkSurfaceFormatKHR surfaceFormat = chooseBestSurfaceFormat(swapChainDetails.formats);
@@ -332,7 +313,7 @@ void VulkanRenderer::createSwapChain()
 	swapChainCreateInfo.clipped = VK_TRUE; // Whether to clip parts of image not in view (e.g. behind another window, off screen, etc)
 
 	// Get Queue Family Indices
-	QueueFamilyIndices indices = getQueueFamilies(mainDevice.physicalDevice);
+	QueueFamilyIndices indices = getQueueFamilies(Globals::vkContext->physicalDevice);
 
 	// If graphics and Presentation families are different, then swapchain must let images be shared between families
 	if (indices.graphicsFamily != indices.presentationFamily)
@@ -359,27 +340,24 @@ void VulkanRenderer::createSwapChain()
 	swapChainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
 	// Create Swapchain
-	VkResult result = vkCreateSwapchainKHR(mainDevice.logicalDevice, &swapChainCreateInfo, nullptr, &swapchain);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create a Swapchain!");
-	}
+	VkResult result = vkCreateSwapchainKHR(Globals::vkContext->logicalDevice, &swapChainCreateInfo, nullptr, &swapchain);
+	assert(result == VK_SUCCESS && "Failed to create a Swapchain!");
 
 	// Store for later reference
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
 
 	uint32_t swapChainImageCount;
-	vkGetSwapchainImagesKHR(mainDevice.logicalDevice, swapchain, &swapChainImageCount, nullptr);
+	vkGetSwapchainImagesKHR(Globals::vkContext->logicalDevice, swapchain, &swapChainImageCount, nullptr);
 	std::vector<VkImage> images(swapChainImageCount);
-	vkGetSwapchainImagesKHR(mainDevice.logicalDevice, swapchain, &swapChainImageCount, images.data());
+	vkGetSwapchainImagesKHR(Globals::vkContext->logicalDevice, swapchain, &swapChainImageCount, images.data());
 
 	for (VkImage image : images)
 	{
 		// Store image handle
 		SwapchainImage swapChainImage = {};
 		swapChainImage.image = image;
-		swapChainImage.imageView = TextureUtils::createImageView(image, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, mainDevice.logicalDevice);
+		swapChainImage.imageView = TextureUtils::createImageView(image, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 
 		// Add to swapchain image list
 		swapChainImages.push_back(swapChainImage);
@@ -474,11 +452,8 @@ void VulkanRenderer::createRenderPass()
 	renderPassCreateInfo.dependencyCount = static_cast<uint32_t>(subpassDependencies.size());
 	renderPassCreateInfo.pDependencies = subpassDependencies.data();
 
-	VkResult result = vkCreateRenderPass(mainDevice.logicalDevice, &renderPassCreateInfo, nullptr, &renderPass);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create a Render Pass!");
-	}
+	VkResult result = vkCreateRenderPass(Globals::vkContext->logicalDevice, &renderPassCreateInfo, nullptr, &renderPass);
+	assert(result == VK_SUCCESS && "Failed to create a Render Pass!");
 }
 
 void VulkanRenderer::createDescriptorSetLayout()
@@ -509,11 +484,8 @@ void VulkanRenderer::createDescriptorSetLayout()
 	layoutCreateInfo.pBindings = layoutBindings.data();								// Array of binding infos
 
 	// Create Descriptor Set Layout
-	VkResult result = vkCreateDescriptorSetLayout(mainDevice.logicalDevice, &layoutCreateInfo, nullptr, &descriptorSetLayout);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create a Descriptor Set Layout!");
-	}
+	VkResult result = vkCreateDescriptorSetLayout(Globals::vkContext->logicalDevice, &layoutCreateInfo, nullptr, &descriptorSetLayout);
+	assert(result == VK_SUCCESS && "Failed to create a Descriptor Set Layout!");
 
 	// Create texture sampler descriptor set layout
 
@@ -532,11 +504,8 @@ void VulkanRenderer::createDescriptorSetLayout()
 	textureLayoutCreateInfo.pBindings = &samplerLayoutBinding;
 
 	// Create descriptor set layout
-	result = vkCreateDescriptorSetLayout(mainDevice.logicalDevice, &textureLayoutCreateInfo, nullptr, &samplerSetLayout);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create a Descriptor Set Layout!");
-	}
+	result = vkCreateDescriptorSetLayout(Globals::vkContext->logicalDevice, &textureLayoutCreateInfo, nullptr, &samplerSetLayout);
+	assert(result == VK_SUCCESS && "Failed to create a Descriptor Set Layout!");
 }
 
 void VulkanRenderer::createPushConstantRange()
@@ -705,11 +674,8 @@ void VulkanRenderer::createGraphicsPipeline()
 	pipelineLayoutCreateInfo.pPushConstantRanges = &pushConstantRange;
 
 	// Create pipeline layout
-	VkResult result = vkCreatePipelineLayout(mainDevice.logicalDevice, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create Pipeline Layout!");
-	}
+	VkResult result = vkCreatePipelineLayout(Globals::vkContext->logicalDevice, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout);
+	assert(result == VK_SUCCESS && "Failed to create Pipeline Layout!");
 
 	// Depth stencil testing
 	// TODO: Set up depth stencil testing
@@ -743,16 +709,12 @@ void VulkanRenderer::createGraphicsPipeline()
 	pipelineCreateInfo.basePipelineIndex = -1; // or inde of pipeline bgeing created to derive from (in case creating multiple at once)
 
 	// Create graphics pipeline
-	result = vkCreateGraphicsPipelines(mainDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &graphicsPipeline);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create Graphics Pipeline!");
-	}
-
+	result = vkCreateGraphicsPipelines(Globals::vkContext->logicalDevice, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &graphicsPipeline);
+	assert(result == VK_SUCCESS && "Failed to create Graphics Pipeline!");
 
 	// Destroy shader modules after pipeline creation (in the oposite order of creation)
-	vkDestroyShaderModule(mainDevice.logicalDevice, fragmentShaderModule, nullptr);
-	vkDestroyShaderModule(mainDevice.logicalDevice, vertexShaderModule, nullptr);
+	vkDestroyShaderModule(Globals::vkContext->logicalDevice, fragmentShaderModule, nullptr);
+	vkDestroyShaderModule(Globals::vkContext->logicalDevice, vertexShaderModule, nullptr);
 }
 
 void VulkanRenderer::createDepthBufferImage()
@@ -766,10 +728,10 @@ void VulkanRenderer::createDepthBufferImage()
 
 	// Create depth buffer image
 	depthBufferImage = TextureUtils::createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthBufferImageMemory, mainDevice.physicalDevice, mainDevice.logicalDevice);
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthBufferImageMemory);
 
 	// Create depth buffer image view
-	depthBufferImageView = TextureUtils::createImageView(depthBufferImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, mainDevice.logicalDevice);
+	depthBufferImageView = TextureUtils::createImageView(depthBufferImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 void VulkanRenderer::createFramebuffers()
@@ -793,19 +755,15 @@ void VulkanRenderer::createFramebuffers()
 		framebufferCreateInfo.height = swapChainExtent.height; // Framebuffer height
 		framebufferCreateInfo.layers = 1; // Framebuffer layers
 
-		VkResult result = vkCreateFramebuffer(mainDevice.logicalDevice, &framebufferCreateInfo, nullptr, &swapChainFramebuffers[i]);
-
-		if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to create a Framebuffer!");
-		}
+		VkResult result = vkCreateFramebuffer(Globals::vkContext->logicalDevice, &framebufferCreateInfo, nullptr, &swapChainFramebuffers[i]);
+		assert(result == VK_SUCCESS && "Failed to create a Framebuffer!");
 	}
 }
 
 void VulkanRenderer::createCommandPool()
 {
 	// Get indices of queue families from device
-	QueueFamilyIndices queueFamilyIndices = getQueueFamilies(mainDevice.physicalDevice);
+	QueueFamilyIndices queueFamilyIndices = getQueueFamilies(Globals::vkContext->physicalDevice);
 
 	VkCommandPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -813,11 +771,8 @@ void VulkanRenderer::createCommandPool()
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily; // Queue Family type buffers from this command pool will use
 
 	// Create a Graphics queue family command pool
-	VkResult result = vkCreateCommandPool(mainDevice.logicalDevice, &poolInfo, nullptr, &graphicsCommandPool);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create a Command Pool!");
-	}
+	VkResult result = vkCreateCommandPool(Globals::vkContext->logicalDevice, &poolInfo, nullptr, &Globals::vkContext->graphicsCommandPool);
+	assert(result == VK_SUCCESS && "Failed to create a Command Pool!");
 }
 
 void VulkanRenderer::createCommandBuffers()
@@ -827,16 +782,13 @@ void VulkanRenderer::createCommandBuffers()
 
 	VkCommandBufferAllocateInfo cbAllocInfo = {};
 	cbAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cbAllocInfo.commandPool = graphicsCommandPool;
+	cbAllocInfo.commandPool = Globals::vkContext->graphicsCommandPool;
 	cbAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY; // Buffer you submit directly to queue, cant be called by other buffers
 	cbAllocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 
 	// Allocate command buffers and places handles in array of buffers
-	VkResult result = vkAllocateCommandBuffers(mainDevice.logicalDevice, &cbAllocInfo, commandBuffers.data());
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to allocate Command Buffers!");
-	}
+	VkResult result = vkAllocateCommandBuffers(Globals::vkContext->logicalDevice, &cbAllocInfo, commandBuffers.data());
+	assert(result == VK_SUCCESS && "Failed to allocate Command Buffers!");
 }
 
 void VulkanRenderer::createSynchronization()
@@ -856,9 +808,9 @@ void VulkanRenderer::createSynchronization()
 
 	for (size_t i = 0; i < MAX_FRAME_DRAWS; i++)
 	{
-		if (vkCreateSemaphore(mainDevice.logicalDevice, &semaphoreCreateInfo, nullptr, &imageAvailable[i]) != VK_SUCCESS ||
-			vkCreateSemaphore(mainDevice.logicalDevice, &semaphoreCreateInfo, nullptr, &renderFinished[i]) != VK_SUCCESS ||
-			vkCreateFence(mainDevice.logicalDevice, &fenceCreateInfo, nullptr, &drawFences[i]) != VK_SUCCESS)
+		if (vkCreateSemaphore(Globals::vkContext->logicalDevice, &semaphoreCreateInfo, nullptr, &imageAvailable[i]) != VK_SUCCESS ||
+			vkCreateSemaphore(Globals::vkContext->logicalDevice, &semaphoreCreateInfo, nullptr, &renderFinished[i]) != VK_SUCCESS ||
+			vkCreateFence(Globals::vkContext->logicalDevice, &fenceCreateInfo, nullptr, &drawFences[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to create a Semaphore and/or Fence!");
 		}
@@ -884,11 +836,8 @@ void VulkanRenderer::createTextureSampler()
 	samplerCreateInfo.anisotropyEnable = VK_TRUE; // Enable anisotropy (makes less aliasing when looking things further away)
 	samplerCreateInfo.maxAnisotropy = 16; // Anisotropy sample level
 
-	VkResult result = vkCreateSampler(mainDevice.logicalDevice, &samplerCreateInfo, nullptr, &textureSampler);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create a Texture Sampler!");
-	}
+	VkResult result = vkCreateSampler(Globals::vkContext->logicalDevice, &samplerCreateInfo, nullptr, &textureSampler);
+	assert(result == VK_SUCCESS && "Failed to create a Texture Sampler!");
 }
 
 void VulkanRenderer::createUniformBuffers()
@@ -908,10 +857,10 @@ void VulkanRenderer::createUniformBuffers()
 	// Create Uniform buffers
 	for (size_t i = 0; i < swapChainImages.size(); i++)
 	{
-		createBuffer(mainDevice.physicalDevice, mainDevice.logicalDevice, vpBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		createBuffer(Globals::vkContext->physicalDevice, Globals::vkContext->logicalDevice, vpBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &vpUniformBuffer[i], &vpUniformBufferMemory[i]);
 
-		/*createBuffer(mainDevice.physicalDevice, mainDevice.logicalDevice, modelBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		/*createBuffer(Globals::mainDevice->physicalDevice, Globals::mainDevice->logicalDevice, modelBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &modelDUniformBuffer[i], &modelDUniformBufferMemory[i]);*/
 	}
 }
@@ -942,11 +891,8 @@ void VulkanRenderer::createDescriptorPool()
 	poolCreateInfo.pPoolSizes = descriptorPoolSizes.data();									// Pool Sizes to create pool with
 
 	// Create Descriptor Pool
-	VkResult result = vkCreateDescriptorPool(mainDevice.logicalDevice, &poolCreateInfo, nullptr, &descriptorPool);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create a Descriptor Pool!");
-	}
+	VkResult result = vkCreateDescriptorPool(Globals::vkContext->logicalDevice, &poolCreateInfo, nullptr, &descriptorPool);
+	assert(result == VK_SUCCESS && "Failed to create a Descriptor Pool!");
 
 	// Create sampler descriptor pool
 	VkDescriptorPoolSize samplerPoolSize = {};
@@ -959,11 +905,8 @@ void VulkanRenderer::createDescriptorPool()
 	samplerPoolCreateInfo.poolSizeCount = 1;
 	samplerPoolCreateInfo.pPoolSizes = &samplerPoolSize;
 
-	result = vkCreateDescriptorPool(mainDevice.logicalDevice, &samplerPoolCreateInfo, nullptr, &samplerDescriptorPool);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create a Descriptor Pool!");
-	}
+	result = vkCreateDescriptorPool(Globals::vkContext->logicalDevice, &samplerPoolCreateInfo, nullptr, &samplerDescriptorPool);
+	assert(result == VK_SUCCESS && "Failed to create a Descriptor Pool!");
 }
 
 void VulkanRenderer::createDescriptorSets()
@@ -981,11 +924,8 @@ void VulkanRenderer::createDescriptorSets()
 	setAllocInfo.pSetLayouts = setLayouts.data();									// Layouts to use to allocate sets (1:1 relationship)
 
 	// Allocate descriptor sets (multiple)
-	VkResult result = vkAllocateDescriptorSets(mainDevice.logicalDevice, &setAllocInfo, descriptorSets.data());
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to allocate Descriptor Sets!");
-	}
+	VkResult result = vkAllocateDescriptorSets(Globals::vkContext->logicalDevice, &setAllocInfo, descriptorSets.data());
+	assert(result == VK_SUCCESS && "Failed to allocate Descriptor Sets!");
 
 	// Update all of descriptor set buffer bindings
 	for (size_t i = 0; i < swapChainImages.size(); i++)
@@ -1027,7 +967,7 @@ void VulkanRenderer::createDescriptorSets()
 		std::vector<VkWriteDescriptorSet> setWrites = { vpSetWrite };
 
 		// Update the descriptor sets with new buffer/binding info
-		vkUpdateDescriptorSets(mainDevice.logicalDevice, static_cast<uint32_t>(setWrites.size()), setWrites.data(),
+		vkUpdateDescriptorSets(Globals::vkContext->logicalDevice, static_cast<uint32_t>(setWrites.size()), setWrites.data(),
 			0, nullptr);
 	}
 }
@@ -1036,9 +976,9 @@ void VulkanRenderer::updateUniformBuffers(uint32_t imageIndex)
 {
 	// Copy VP data
 	void* data;
-	vkMapMemory(mainDevice.logicalDevice, vpUniformBufferMemory[imageIndex], 0, sizeof(UboViewProjection), 0, &data);
+	vkMapMemory(Globals::vkContext->logicalDevice, vpUniformBufferMemory[imageIndex], 0, sizeof(UboViewProjection), 0, &data);
 	memcpy(data, &uboViewProjection, sizeof(UboViewProjection));
-	vkUnmapMemory(mainDevice.logicalDevice, vpUniformBufferMemory[imageIndex]);
+	vkUnmapMemory(Globals::vkContext->logicalDevice, vpUniformBufferMemory[imageIndex]);
 
 	// Copy Model data
 	/*for (size_t i = 0; i < meshList.size(); i++)
@@ -1048,9 +988,9 @@ void VulkanRenderer::updateUniformBuffers(uint32_t imageIndex)
 	}
 
 	// Map the list of model data
-	vkMapMemory(mainDevice.logicalDevice, modelDUniformBufferMemory[imageIndex], 0, modelUniformAlignment * meshList.size(), 0, &data);
+	vkMapMemory(Globals::mainDevice->logicalDevice, modelDUniformBufferMemory[imageIndex], 0, modelUniformAlignment * meshList.size(), 0, &data);
 	memcpy(data, modelTransferSpace, modelUniformAlignment * meshList.size());
-	vkUnmapMemory(mainDevice.logicalDevice, modelDUniformBufferMemory[imageIndex]);*/
+	vkUnmapMemory(Globals::mainDevice->logicalDevice, modelDUniformBufferMemory[imageIndex]);*/
 }
 
 void VulkanRenderer::recordCommands(uint32_t currentImage)
@@ -1077,10 +1017,7 @@ void VulkanRenderer::recordCommands(uint32_t currentImage)
 
 	// Start recording commands to command buffer
 	VkResult result = vkBeginCommandBuffer(commandBuffers[currentImage], &bufferBeginInfo);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to start recording a Command Buffer!");
-	}
+	assert(result == VK_SUCCESS && "Failed to start recording a Command Buffer!");
 
 	// Begin Render Pass
 	vkCmdBeginRenderPass(commandBuffers[currentImage], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -1131,10 +1068,7 @@ void VulkanRenderer::recordCommands(uint32_t currentImage)
 
 	// Stop recording to command buffer
 	result = vkEndCommandBuffer(commandBuffers[currentImage]);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to stop recording a Command Buffer!");
-	}
+	assert(result == VK_SUCCESS && "Failed to stop recording a Command Buffer!");
 }
 
 void VulkanRenderer::getPhysicalDevice()
@@ -1144,10 +1078,7 @@ void VulkanRenderer::getPhysicalDevice()
 	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
 	// If no devices available, then none support Vulkan!
-	if (deviceCount == 0)
-	{
-		throw std::runtime_error("Can't find GPUs that support Vulkan Instance!");
-	}
+	assert(deviceCount != 0 && "Can't find GPUs that support Vulkan Instance!");
 
 	// Get list of Physical Devices
 	std::vector<VkPhysicalDevice> deviceList(deviceCount);
@@ -1159,13 +1090,13 @@ void VulkanRenderer::getPhysicalDevice()
 	{
 		if (checkDeviceSuitable(device))
 		{
-			mainDevice.physicalDevice = device;
+			Globals::vkContext->physicalDevice = device;
 			break;
 		}
 	}
 
 	VkPhysicalDeviceProperties deviceProperties;
-	vkGetPhysicalDeviceProperties(mainDevice.physicalDevice, &deviceProperties);
+	vkGetPhysicalDeviceProperties(Globals::vkContext->physicalDevice, &deviceProperties);
 
 	//minUniformBufferOffset = deviceProperties.limits.minUniformBufferOffsetAlignment;
 }
@@ -1459,7 +1390,7 @@ VkFormat VulkanRenderer::chooseSupportedFormat(const std::vector<VkFormat>& form
 	{
 		// Get properties for given format on this device
 		VkFormatProperties properties;
-		vkGetPhysicalDeviceFormatProperties(mainDevice.physicalDevice, format, &properties);
+		vkGetPhysicalDeviceFormatProperties(Globals::vkContext->physicalDevice, format, &properties);
 
 		// Depending on tiling choice need to check for different bit flag
 		if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & featureFlags) == featureFlags)
@@ -1484,11 +1415,8 @@ VkShaderModule VulkanRenderer::createShaderModule(const std::vector<char>& code)
 	shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(code.data()); // Pointer of code (of uint32_t pointer type)
 
 	VkShaderModule shaderModule;
-	VkResult result = vkCreateShaderModule(mainDevice.logicalDevice, &shaderModuleCreateInfo, nullptr, &shaderModule);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create a shader module!");
-	}
+	VkResult result = vkCreateShaderModule(Globals::vkContext->logicalDevice, &shaderModuleCreateInfo, nullptr, &shaderModule);
+	assert(result == VK_SUCCESS && "Failed to create a shader module!");
 
 	return shaderModule;
 }
@@ -1498,8 +1426,7 @@ int VulkanRenderer::createMeshModel(const std::string& modelFile)
 	// Create mesh model and add to list
 	MeshModel meshModel;
 	meshModel.LoadFile(
-		modelFile, 
-		mainDevice.physicalDevice, mainDevice.logicalDevice, graphicsQueue, graphicsCommandPool,
+		modelFile,
 		textureImages, textureImageMemory, textureImageViews, 
 		samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets
 	);
