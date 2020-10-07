@@ -4,11 +4,14 @@
 #include "../Globals.h"
 #include "Texture.h"
 
+#include <string>
+
+
 #include "Vulkan.h"
 
 namespace Utilities::Texture
 {
-	int createTexture(const std::string& fileName, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
+	int createTexture(const char* fileName, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
 		VkDescriptorPool& samplerDescriptorPool, VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets)
 	{
 		// Create Texture Image and get its location in array
@@ -97,7 +100,7 @@ namespace Utilities::Texture
 		return imageView;
 	}
 
-	int createTextureImage(const std::string& fileName, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory)
+	int createTextureImage(const char* fileName, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory)
 	{
 		// Load image file
 		int width, height;
@@ -151,15 +154,14 @@ namespace Utilities::Texture
 		return textureImages.size() - 1;
 	}
 
-	stbi_uc* loadTextureFile(const std::string& fileName, int* width, int* height, VkDeviceSize* imageSize)
+	stbi_uc* loadTextureFile(const char* fileName, int* width, int* height, VkDeviceSize* imageSize)
 	{
 		// Number of channels image uses
 		int channels;
 
 		// Load pixel data for image
-		std::string fileLoc = "textures/" + fileName;
-		stbi_uc* image = stbi_load(fileLoc.c_str(), width, height, &channels, STBI_rgb_alpha);
-		assert(image && "Failed to load a Texture file!: " && fileName.c_str());
+		stbi_uc* image = stbi_load((std::string("textures/")+fileName).c_str(), width, height, &channels, STBI_rgb_alpha);
+		assert(image && "Failed to load a Texture file!: " && fileName);
 
 		// Calculate image size using given and known data
 		*imageSize = (*width) * (*height) * 4;

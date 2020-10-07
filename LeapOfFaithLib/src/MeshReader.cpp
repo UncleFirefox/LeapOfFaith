@@ -42,7 +42,7 @@ namespace MeshReader
 			else
 			{
 				// Otherwise, create texture and set value to index of new texture
-				matToTex[i] = Utilities::Texture::createTexture(textureNames[i], textureImages, textureImageMemory, textureImageViews,
+				matToTex[i] = Utilities::Texture::createTexture(textureNames[i].c_str(), textureImages, textureImageMemory, textureImageViews,
 				                                                samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
 			}
 		}
