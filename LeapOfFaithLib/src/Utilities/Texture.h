@@ -1,7 +1,7 @@
 #pragma once
+#include <string>
 #include <vector>
 
-#include <iostream>
 #include <vulkan/vulkan_core.h>
 
 typedef unsigned char stbi_uc;

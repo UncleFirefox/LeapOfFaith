@@ -1,6 +1,5 @@
 #include "MeshModel.h"
 #include "MeshReader.h"
-#include "TextureUtils.h"
 
 MeshModel::MeshModel()
 {
@@ -21,10 +20,7 @@ void MeshModel::LoadFile(const char* modelFile,
 
 Mesh* MeshModel::getMesh(size_t index)
 {
-	if (index >= meshList.size())
-	{
-		throw std::runtime_error("Attempted to access invalid Mesh Index!");
-	}
+	assert(index < meshList.size() && "Attempted to access invalid Mesh Index!");
 
 	return &meshList[index];
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stdexcept>
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
@@ -68,10 +67,7 @@ namespace Utilities::Vulkan
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;			// Similar to Swap Chain images, can share vertex buffers
 
 		VkResult result = vkCreateBuffer(device, &bufferInfo, nullptr, buffer);
-		if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to create a Vertex Buffer!");
-		}
+		if (result == VK_SUCCESS && "Failed to create a Vertex Buffer!");
 
 		// GET BUFFER MEMORY REQUIREMENTS
 		VkMemoryRequirements memRequirements;
@@ -86,10 +82,7 @@ namespace Utilities::Vulkan
 																									// VK_MEMORY_PROPERTY_HOST_COHERENT_BIT	: Allows placement of data straight into buffer after mapping (otherwise would have to specify manually)
 		// Allocate memory to VkDeviceMemory
 		result = vkAllocateMemory(device, &memoryAllocInfo, nullptr, bufferMemory);
-		if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to allocate Vertex Buffer Memory!");
-		}
+		assert(result == VK_SUCCESS && "Failed to allocate Vertex Buffer Memory!");
 
 		// Allocate memory to given vertex buffer
 		vkBindBufferMemory(device, *buffer, *bufferMemory, 0);
@@ -109,10 +102,7 @@ namespace Utilities::Vulkan
 
 		// Allocate command buffer from pool
 		VkResult result = vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
-		if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to allocate Command Buffers!");
-		}
+		assert(result == VK_SUCCESS && "Failed to allocate Command Buffers!");
 
 		// Information to begin the command buffer record
 		VkCommandBufferBeginInfo beginInfo = {};

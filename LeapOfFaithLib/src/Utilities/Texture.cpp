@@ -48,10 +48,7 @@ namespace Utilities::Texture
 
 		VkImage image;
 		VkResult result = vkCreateImage(Globals::vkContext->logicalDevice, &imageCreateInfo, nullptr, &image);
-		if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to create an Image!");
-		}
+		assert(result == VK_SUCCESS && "Failed to create an Image!");
 
 		// Create memory for image
 		// Get memory requirements for type of image
@@ -65,10 +62,7 @@ namespace Utilities::Texture
 		memoryAllocInfo.memoryTypeIndex = Vulkan::findMemoryTypeIndex(Globals::vkContext->physicalDevice, memoryRequirements.memoryTypeBits, propFlags);
 
 		result = vkAllocateMemory(Globals::vkContext->logicalDevice, &memoryAllocInfo, nullptr, imageMemory);
-		if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to allocate memory for image!");
-		}
+		assert(result == VK_SUCCESS && "Failed to allocate memory for image!");
 
 		// Connect memory to image
 		vkBindImageMemory(Globals::vkContext->logicalDevice, image, *imageMemory, 0);
@@ -98,10 +92,7 @@ namespace Utilities::Texture
 		// Create image view and return it
 		VkImageView imageView;
 		VkResult result = vkCreateImageView(Globals::vkContext->logicalDevice, &viewCreateInfo, nullptr, &imageView);
-		if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to create an Image View!");
-		}
+		assert(result == VK_SUCCESS && "Failed to create an Image View!");
 
 		return imageView;
 	}
@@ -168,11 +159,7 @@ namespace Utilities::Texture
 		// Load pixel data for image
 		std::string fileLoc = "textures/" + fileName;
 		stbi_uc* image = stbi_load(fileLoc.c_str(), width, height, &channels, STBI_rgb_alpha);
-
-		if (!image)
-		{
-			throw std::runtime_error("Failed to load a Texture file! (" + fileName + ")");
-		}
+		assert(image && "Failed to load a Texture file!: " && fileName.c_str());
 
 		// Calculate image size using given and known data
 		*imageSize = (*width) * (*height) * 4;
@@ -194,10 +181,7 @@ namespace Utilities::Texture
 
 		// Allocate Descriptor Sets
 		VkResult result = vkAllocateDescriptorSets(logicalDevice, &setAllocInfo, &descriptorSet);
-		if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to allocate Texture Descriptor Sets!");
-		}
+		assert(result == VK_SUCCESS && "Failed to allocate Texture Descriptor Sets!");
 
 		// Texture Image info
 		VkDescriptorImageInfo imageInfo = {};
