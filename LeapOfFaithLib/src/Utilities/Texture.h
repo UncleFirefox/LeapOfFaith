@@ -1,12 +1,12 @@
 #pragma once
-#include <vulkan/vulkan.h>
 #include <vector>
 
 #include <iostream>
+#include <vulkan/vulkan_core.h>
 
 typedef unsigned char stbi_uc;
 
-namespace TextureUtils
+namespace Utilities::Texture
 {
 	int createTexture(const std::string& fileName,
 		std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,

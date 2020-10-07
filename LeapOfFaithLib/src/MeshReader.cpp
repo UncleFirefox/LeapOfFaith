@@ -1,10 +1,11 @@
 #include "MeshReader.h"
 
 #include "Globals.h"
-#include "TextureUtils.h"
 
 #include <fstream>
 #include <string>
+
+#include "Utilities/Texture.h"
 
 namespace MeshReader
 {
@@ -41,8 +42,8 @@ namespace MeshReader
 			else
 			{
 				// Otherwise, create texture and set value to index of new texture
-				matToTex[i] = TextureUtils::createTexture(textureNames[i], textureImages, textureImageMemory, textureImageViews,
-					samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
+				matToTex[i] = Utilities::Texture::createTexture(textureNames[i], textureImages, textureImageMemory, textureImageViews,
+				                                                samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
 			}
 		}
 

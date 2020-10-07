@@ -4,6 +4,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Engine.h"
+
+#include <fstream>
+
 #include "VulkanRenderer.h"
 #include "nlohmann/json.hpp"
 

@@ -1,14 +1,15 @@
 #include <array>
+#include <assert.h>
 #include <set>
 #include <glm/gtc/matrix_transform.hpp>
-#include <assert.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include "Globals.h"
 #include "VulkanRenderer.h"
-#include "TextureUtils.h"
+#include "Globals.h"
+#include "Utilities/Texture.h"
+#include "Utilities/IO.h"
 
 int VulkanRenderer::init(GLFWwindow* newWindow)
 {
@@ -40,8 +41,8 @@ int VulkanRenderer::init(GLFWwindow* newWindow)
 	uboViewProjection.projection[1][1] *= -1;
 
 	// Create our default "no texture" texture
-	TextureUtils::createTexture("plain.png",textureImages, textureImageMemory, textureImageViews, 
-		samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
+	Utilities::Texture::createTexture("plain.png",textureImages, textureImageMemory, textureImageViews, 
+	                                  samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
 	
 	return 0;
 }
@@ -357,7 +358,7 @@ void VulkanRenderer::createSwapChain()
 		// Store image handle
 		SwapchainImage swapChainImage = {};
 		swapChainImage.image = image;
-		swapChainImage.imageView = TextureUtils::createImageView(image, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+		swapChainImage.imageView = Utilities::Texture::createImageView(image, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 
 		// Add to swapchain image list
 		swapChainImages.push_back(swapChainImage);
@@ -519,8 +520,8 @@ void VulkanRenderer::createPushConstantRange()
 void VulkanRenderer::createGraphicsPipeline()
 {
 	// Read in SPIR-V code of shaders
-	auto vertexShaderCode = readFile("shaders/vert.spv");
-	auto fragmentShaderCode = readFile("shaders/frag.spv");
+	auto vertexShaderCode = Utilities::IO::readFile("shaders/vert.spv");
+	auto fragmentShaderCode = Utilities::IO::readFile("shaders/frag.spv");
 
 	// Build Shader Modules to link to Graphics Pipeline
 	VkShaderModule vertexShaderModule = createShaderModule(vertexShaderCode);
@@ -727,11 +728,11 @@ void VulkanRenderer::createDepthBufferImage()
 	);
 
 	// Create depth buffer image
-	depthBufferImage = TextureUtils::createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthBufferImageMemory);
+	depthBufferImage = Utilities::Texture::createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
+	                                                   VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthBufferImageMemory);
 
 	// Create depth buffer image view
-	depthBufferImageView = TextureUtils::createImageView(depthBufferImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+	depthBufferImageView = Utilities::Texture::createImageView(depthBufferImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 void VulkanRenderer::createFramebuffers()
@@ -857,8 +858,8 @@ void VulkanRenderer::createUniformBuffers()
 	// Create Uniform buffers
 	for (size_t i = 0; i < swapChainImages.size(); i++)
 	{
-		createBuffer(Globals::vkContext->physicalDevice, Globals::vkContext->logicalDevice, vpBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &vpUniformBuffer[i], &vpUniformBufferMemory[i]);
+		Utilities::Vulkan::createBuffer(Globals::vkContext->physicalDevice, Globals::vkContext->logicalDevice, vpBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &vpUniformBuffer[i], &vpUniformBufferMemory[i]);
 
 		/*createBuffer(Globals::mainDevice->physicalDevice, Globals::mainDevice->logicalDevice, modelBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &modelDUniformBuffer[i], &modelDUniformBufferMemory[i]);*/

@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "MeshModel.h"
-#include "Utilities.h"
+#include "Utilities/Vulkan.h"
 
 struct GLFWwindow;
 

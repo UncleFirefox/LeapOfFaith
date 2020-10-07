@@ -112,8 +112,9 @@
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\MeshModel.h" />
     <ClInclude Include="src\MeshReader.h" />
-    <ClInclude Include="src\TextureUtils.h" />
-    <ClInclude Include="src\Utilities.h" />
+    <ClInclude Include="src\Utilities\Texture.h" />
+    <ClInclude Include="src\Utilities\IO.h" />
+    <ClInclude Include="src\Utilities\Vulkan.h" />
     <ClInclude Include="src\VulkanRenderer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -123,7 +124,7 @@
     <ClCompile Include="src\MeshModel.cpp" />
     <ClCompile Include="src\MeshReader.cpp" />
     <ClCompile Include="src\VulkanRenderer.cpp" />
-    <ClCompile Include="src\TextureUtils.cpp" />
+    <ClCompile Include="src\Utilities\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\compile_shaders.bat" />
