@@ -7,7 +7,7 @@ MeshModel::MeshModel()
 	model = glm::mat4(1.0f);
 }
 
-void MeshModel::LoadFile(const std::string& modelFile,
+void MeshModel::LoadFile(const char* modelFile,
 	std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
 	VkDescriptorPool& samplerDescriptorPool, VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets)
 {

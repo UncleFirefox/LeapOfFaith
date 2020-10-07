@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "Utilities.h"
 
 Mesh::Mesh(VkPhysicalDevice newPhysicalDevice, VkDevice newDevice,
 	VkQueue transferQueue, VkCommandPool transferCommandPool,

@@ -1,18 +1,10 @@
 #pragma once
 #include <glm/mat4x4.hpp>
 
-struct VkPhysicalDevice_T;
-typedef VkPhysicalDevice_T* VkPhysicalDevice;
-struct VkDevice_T;
-typedef VkDevice_T* VkDevice;
-struct VkQueue_T;
-typedef VkQueue_T* VkQueue;
-struct VkCommandPool_T;
-typedef VkCommandPool_T* VkCommandPool;
+#include "DataStructures.h"
 
 #include <vector>
-
-#include "Utilities.h"
+#include <vulkan/vulkan_core.h>
 
 struct Model {
 	glm::mat4 model;

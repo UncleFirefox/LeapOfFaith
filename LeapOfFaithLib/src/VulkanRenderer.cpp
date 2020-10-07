@@ -1421,7 +1421,7 @@ VkShaderModule VulkanRenderer::createShaderModule(const std::vector<char>& code)
 	return shaderModule;
 }
 
-int VulkanRenderer::createMeshModel(const std::string& modelFile)
+int VulkanRenderer::createMeshModel(const char* modelFile)
 {
 	// Create mesh model and add to list
 	MeshModel meshModel;

@@ -28,8 +28,8 @@ int Engine::start()
 	float angle = 0.0f;
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
-
-	int helicopter = vulkanRenderer.createMeshModel(config["model"]);
+	
+	int helicopter = vulkanRenderer.createMeshModel(config["model"].get<std::string>().c_str());
 
 	// Loop
 	while (!glfwWindowShouldClose(window))
