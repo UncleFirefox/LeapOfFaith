@@ -1,13 +1,17 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include "Globals.h"
-#include "TextureUtils.h"
-#include "Utilities.h"
+#include "../Globals.h"
+#include "Texture.h"
 
-namespace TextureUtils
+#include <string>
+
+
+#include "Vulkan.h"
+
+namespace Utilities::Texture
 {
-	int createTexture(const std::string& fileName, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
+	int createTexture(const char* fileName, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
 		VkDescriptorPool& samplerDescriptorPool, VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets)
 	{
 		// Create Texture Image and get its location in array
@@ -47,10 +51,7 @@ namespace TextureUtils
 
 		VkImage image;
 		VkResult result = vkCreateImage(Globals::vkContext->logicalDevice, &imageCreateInfo, nullptr, &image);
-		if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to create an Image!");
-		}
+		assert(result == VK_SUCCESS && "Failed to create an Image!");
 
 		// Create memory for image
 		// Get memory requirements for type of image
@@ -61,13 +62,10 @@ namespace TextureUtils
 		VkMemoryAllocateInfo memoryAllocInfo = {};
 		memoryAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		memoryAllocInfo.allocationSize = memoryRequirements.size;
-		memoryAllocInfo.memoryTypeIndex = findMemoryTypeIndex(Globals::vkContext->physicalDevice, memoryRequirements.memoryTypeBits, propFlags);
+		memoryAllocInfo.memoryTypeIndex = Vulkan::findMemoryTypeIndex(Globals::vkContext->physicalDevice, memoryRequirements.memoryTypeBits, propFlags);
 
 		result = vkAllocateMemory(Globals::vkContext->logicalDevice, &memoryAllocInfo, nullptr, imageMemory);
-		if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to allocate memory for image!");
-		}
+		assert(result == VK_SUCCESS && "Failed to allocate memory for image!");
 
 		// Connect memory to image
 		vkBindImageMemory(Globals::vkContext->logicalDevice, image, *imageMemory, 0);
@@ -97,15 +95,12 @@ namespace TextureUtils
 		// Create image view and return it
 		VkImageView imageView;
 		VkResult result = vkCreateImageView(Globals::vkContext->logicalDevice, &viewCreateInfo, nullptr, &imageView);
-		if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to create an Image View!");
-		}
+		assert(result == VK_SUCCESS && "Failed to create an Image View!");
 
 		return imageView;
 	}
 
-	int createTextureImage(const std::string& fileName, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory)
+	int createTextureImage(const char* fileName, std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory)
 	{
 		// Load image file
 		int width, height;
@@ -115,9 +110,9 @@ namespace TextureUtils
 		// Create staging buffer to hold loaded data, ready to copy to device
 		VkBuffer imageStagingBuffer;
 		VkDeviceMemory imageStagingBufferMemory;
-		createBuffer(Globals::vkContext->physicalDevice, Globals::vkContext->logicalDevice, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&imageStagingBuffer, &imageStagingBufferMemory);
+		Vulkan::createBuffer(Globals::vkContext->physicalDevice, Globals::vkContext->logicalDevice, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		                     &imageStagingBuffer, &imageStagingBufferMemory);
 
 		// Copy image to staging buffer
 		void* data;
@@ -137,15 +132,15 @@ namespace TextureUtils
 		// Copy data to image
 
 		// Transition image to be DST for copy operation
-		transitionImageLayout(Globals::vkContext->logicalDevice, Globals::vkContext->graphicsQueue, Globals::vkContext->graphicsCommandPool,
-			texImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		Vulkan::transitionImageLayout(Globals::vkContext->logicalDevice, Globals::vkContext->graphicsQueue, Globals::vkContext->graphicsCommandPool,
+		                              texImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 		// Copy image data
-		copyImageBuffer(Globals::vkContext->logicalDevice, Globals::vkContext->graphicsQueue, Globals::vkContext->graphicsCommandPool, imageStagingBuffer, texImage, width, height);
+		Vulkan::copyImageBuffer(Globals::vkContext->logicalDevice, Globals::vkContext->graphicsQueue, Globals::vkContext->graphicsCommandPool, imageStagingBuffer, texImage, width, height);
 
 		// Transition image to be shader readable for shader usage
-		transitionImageLayout(Globals::vkContext->logicalDevice, Globals::vkContext->graphicsQueue, Globals::vkContext->graphicsCommandPool,
-			texImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		Vulkan::transitionImageLayout(Globals::vkContext->logicalDevice, Globals::vkContext->graphicsQueue, Globals::vkContext->graphicsCommandPool,
+		                              texImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		// Add texture data to vector for reference
 		textureImages.push_back(texImage);
@@ -159,19 +154,14 @@ namespace TextureUtils
 		return textureImages.size() - 1;
 	}
 
-	stbi_uc* loadTextureFile(const std::string& fileName, int* width, int* height, VkDeviceSize* imageSize)
+	stbi_uc* loadTextureFile(const char* fileName, int* width, int* height, VkDeviceSize* imageSize)
 	{
 		// Number of channels image uses
 		int channels;
 
 		// Load pixel data for image
-		std::string fileLoc = "textures/" + fileName;
-		stbi_uc* image = stbi_load(fileLoc.c_str(), width, height, &channels, STBI_rgb_alpha);
-
-		if (!image)
-		{
-			throw std::runtime_error("Failed to load a Texture file! (" + fileName + ")");
-		}
+		stbi_uc* image = stbi_load((std::string("textures/")+fileName).c_str(), width, height, &channels, STBI_rgb_alpha);
+		assert(image && "Failed to load a Texture file!: " && fileName);
 
 		// Calculate image size using given and known data
 		*imageSize = (*width) * (*height) * 4;
@@ -193,10 +183,7 @@ namespace TextureUtils
 
 		// Allocate Descriptor Sets
 		VkResult result = vkAllocateDescriptorSets(logicalDevice, &setAllocInfo, &descriptorSet);
-		if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to allocate Texture Descriptor Sets!");
-		}
+		assert(result == VK_SUCCESS && "Failed to allocate Texture Descriptor Sets!");
 
 		// Texture Image info
 		VkDescriptorImageInfo imageInfo = {};

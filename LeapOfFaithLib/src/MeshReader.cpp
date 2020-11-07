@@ -1,21 +1,22 @@
 #include "MeshReader.h"
 
 #include "Globals.h"
-#include "TextureUtils.h"
 
 #include <fstream>
 #include <string>
 
+#include "Utilities/Texture.h"
+
 namespace MeshReader
 {
-	void loadFromBinary(const std::string& inputFile, std::vector<Mesh>& meshList,
+	void loadFromBinary(const char* inputFile, std::vector<Mesh>& meshList,
 		std::vector<VkImage>& textureImages, std::vector<VkDeviceMemory>& textureImageMemory, std::vector<VkImageView>& textureImageViews,
 		VkDescriptorPool& samplerDescriptorPool, VkDescriptorSetLayout& samplerSetLayout, VkSampler& textureSampler, std::vector<VkDescriptorSet>& samplerDescriptorSets)
 	{
 		std::ifstream file(inputFile, std::ios::in | std::ios::binary);
 
 		if (!file.is_open())
-			throw std::runtime_error("Could not open file " + inputFile + " for reading!");
+			throw std::runtime_error("Could not open file " + std::string(inputFile) + " for reading!");
 
 		std::vector<std::string> textureNames;
 		size_t texturesSize;
@@ -41,8 +42,8 @@ namespace MeshReader
 			else
 			{
 				// Otherwise, create texture and set value to index of new texture
-				matToTex[i] = TextureUtils::createTexture(textureNames[i], textureImages, textureImageMemory, textureImageViews,
-					samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
+				matToTex[i] = Utilities::Texture::createTexture(textureNames[i].c_str(), textureImages, textureImageMemory, textureImageViews,
+				                                                samplerDescriptorPool, samplerSetLayout, textureSampler, samplerDescriptorSets);
 			}
 		}
 

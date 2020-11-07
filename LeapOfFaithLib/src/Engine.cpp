@@ -4,6 +4,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Engine.h"
+
+#include <fstream>
+
 #include "VulkanRenderer.h"
 #include "nlohmann/json.hpp"
 
@@ -28,8 +31,8 @@ int Engine::start()
 	float angle = 0.0f;
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
-
-	int helicopter = vulkanRenderer.createMeshModel(config["model"]);
+	
+	int helicopter = vulkanRenderer.createMeshModel(config["model"].get<std::string>().c_str());
 
 	// Loop
 	while (!glfwWindowShouldClose(window))

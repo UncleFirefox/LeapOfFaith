@@ -1,9 +1,10 @@
 #include "Mesh.h"
+#include "Utilities/Vulkan.h"
 
 Mesh::Mesh(VkPhysicalDevice newPhysicalDevice, VkDevice newDevice,
-	VkQueue transferQueue, VkCommandPool transferCommandPool,
-	std::vector<Vertex>* vertices, std::vector<uint32_t>* indices,
-	int newTexId)
+           VkQueue transferQueue, VkCommandPool transferCommandPool,
+           std::vector<Vertex>* vertices, std::vector<uint32_t>* indices,
+           int newTexId)
 {
 	vertexCount = vertices->size();
 	indexCount = indices->size();
@@ -49,8 +50,8 @@ void Mesh::createVertexBuffer(VkQueue transferQueue, VkCommandPool transferComma
 	VkDeviceMemory stagingBufferMemory;
 
 	// Create buffer and allocate memory to it
-	createBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory);
+	Utilities::Vulkan::createBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+	                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory);
 
 	// MAP MEMORY TO VERTEX BUFFER
 	void* data;																// 1. Create pointer to a point in normal memory
@@ -60,11 +61,11 @@ void Mesh::createVertexBuffer(VkQueue transferQueue, VkCommandPool transferComma
 
 	// Create buffer with TRANSFER_DST_BIT to mark as recipient of transfer data (also VERTEX_BUFFER)
 	// Buffer memory is to be DEVICE_LOCAL_BIT meaning memory is on the GPU and only accesible by it and not CPU (host)
-	createBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &vertexBuffer, &vertexBufferMemory);
+	Utilities::Vulkan::createBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+	                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &vertexBuffer, &vertexBufferMemory);
 
 	// Copy staging buffer to vertex buffer on GPU
-	copyBuffer(device, transferQueue, transferCommandPool, stagingBuffer, vertexBuffer, bufferSize);
+	Utilities::Vulkan::copyBuffer(device, transferQueue, transferCommandPool, stagingBuffer, vertexBuffer, bufferSize);
 
 	// Clean up staging buffer parts
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
@@ -79,8 +80,8 @@ void Mesh::createIndexBuffer(VkQueue transferQueue, VkCommandPool transferComman
 	// Temporary buffer to stage index data before transferring to GPU
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	createBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory);
+	Utilities::Vulkan::createBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+	                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory);
 
 	// MAP MEMORY TO INDEX BUFFER
 	void* data;															
@@ -89,11 +90,11 @@ void Mesh::createIndexBuffer(VkQueue transferQueue, VkCommandPool transferComman
 	vkUnmapMemory(device, stagingBufferMemory);
 
 	// Create buffer for INDEX data on GPU access only area
-	createBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &indexBuffer, &indexBufferMemory);
+	Utilities::Vulkan::createBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+	                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &indexBuffer, &indexBufferMemory);
 
 	// Copy from staging buffer to GPU access buffer
-	copyBuffer(device, transferQueue, transferCommandPool, stagingBuffer, indexBuffer, bufferSize);
+	Utilities::Vulkan::copyBuffer(device, transferQueue, transferCommandPool, stagingBuffer, indexBuffer, bufferSize);
 
 	// Destroy + release staging buffer resources
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
