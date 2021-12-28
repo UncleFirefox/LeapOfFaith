@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <set>
 #include <glm/gtc/matrix_transform.hpp>
+#include <cstring>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -1029,6 +1030,7 @@ void VulkanRenderer::recordCommands(uint32_t currentImage)
 	for (size_t j = 0; j < modelList.size(); j++)
 	{
 		MeshModel thisModel = modelList[j];
+		auto model = thisModel.getModel();
 
 		// Push constatns to given stage directly (no buffer)
 		vkCmdPushConstants(
@@ -1037,7 +1039,7 @@ void VulkanRenderer::recordCommands(uint32_t currentImage)
 			VK_SHADER_STAGE_VERTEX_BIT, // Stage to push constants to
 			0,
 			sizeof(Model), // Size of data being pushed
-			&thisModel.getModel()
+			&model // Avoid rvalue compilation error
 		);
 
 		for (size_t k = 0; k < thisModel.getMeshCount(); k++)

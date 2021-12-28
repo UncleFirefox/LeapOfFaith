@@ -1,0 +1,10 @@
+[requires]
+glm/0.9.9.8
+glfw/3.3.6
+vulkan-headers/1.2.198.0
+nlohmann_json/3.10.4
+assimp/5.1.0
+stb/cci.20210713
+
+[generators]
+cmake
