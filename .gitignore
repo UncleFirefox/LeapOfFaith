@@ -7,3 +7,6 @@
 
 #Place where compilations and intermediate files will be placed
 bin/
+
+#CMake out directory
+build/

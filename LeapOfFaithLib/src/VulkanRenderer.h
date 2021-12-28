@@ -128,13 +128,8 @@ private:
 	bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 	bool checkDeviceSuitable(VkPhysicalDevice device);
 
-	// Validation section added by the community at Udemy
-	// MARCO: What do you think?
-#ifdef _DEBUG
 	const bool enableValidationLayers = true;
-#else
-	const bool enableValidationLayers = false;
-#endif
+
 	const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 	};

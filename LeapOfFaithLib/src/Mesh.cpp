@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "Utilities/Vulkan.h"
+#include <cstring>
 
 Mesh::Mesh(VkPhysicalDevice newPhysicalDevice, VkDevice newDevice,
            VkQueue transferQueue, VkCommandPool transferCommandPool,
